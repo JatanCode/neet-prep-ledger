@@ -25,12 +25,35 @@
 
         body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
 
-        /* Auth Screen */
+        /* AUTH SCREEN STYLE */
         #authScreen { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; margin-top: 50px; }
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #0d1117; border: 1px solid var(--border); color: white; border-radius: 6px; box-sizing: border-box; }
 
-        /* Main App UI */
+        /* MAIN APP UI */
         #appUI { display: none; width: 100%; max-width: 650px; }
+
+        /* DATE INPUT FIXES */
+        input[type="date"] {
+            background: #0d1117;
+            color: white;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            color-scheme: dark; /* Forces browser native picker to dark mode */
+            outline: none;
+        }
+
+        /* MAKES CALENDAR ICON VISIBLE ON DARK THEME */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(1.5); /* Flips black to white and makes it bright */
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            background: rgba(255,255,255,0.1);
+        }
 
         .controls, .statement-controls {
             margin-bottom: 20px; background: var(--card); padding: 15px; border: 1px solid var(--border); border-radius: 8px; display: flex; gap: 15px; align-items: center;
@@ -88,14 +111,14 @@
         <div style="clear:both"></div>
 
         <div class="controls">
-            <label>Study Date:</label>
-            <input type="date" id="currentDate" onchange="loadFromCloud()" style="background:#0d1117; color:white; border:1px solid var(--border); padding:5px;">
+            <label>Date Selector :</label>
+            <input type="date" id="currentDate" onchange="loadFromCloud()">
         </div>
 
         <div class="marksheet">
             <div class="header">
                 <h1>NEET PREP JOURNEY LEDGER</h1>
-                <p style="font-size: 0.8rem; color: var(--subtext);">Class 11 - Future Doctor Record (Cloud Shared)</p>
+                <p style="font-size: 0.8rem; color: var(--subtext);">Class 11 - Future Doctor Record </p>
             </div>
 
             <div class="section">
@@ -122,11 +145,12 @@
             </div>
 
             <div class="section">
-                <span class="label">Topics Covered / MCQs Solved</span>
+                <span class="label">Topics Covered </span>
                 <textarea id="streamNotes" class="field-input" rows="8" style="resize: none;" placeholder="e.g. Physics: Optics..."></textarea>
             </div>
 
             <div class="btn-group">
+                <button id="deleteBtn" onclick="deleteFromCloud()" style="background:var(--low); color:white; display:none;">Delete Data</button>
                 <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white;">Edit Entries</button>
                 <button id="saveBtn" onclick="saveToCloud()" style="background:var(--save-color); color:white;">Save to Cloud</button>
             </div>
@@ -134,9 +158,9 @@
 
         <div class="statement-controls" style="margin-top: 30px;">
             <strong>ACADEMIC STATEMENT:</strong>
-            <input type="date" id="startDate" style="background:#0d1117; color:white; border:1px solid var(--border);"> 
+            <input type="date" id="startDate"> 
             <span>to</span>
-            <input type="date" id="endDate" style="background:#0d1117; color:white; border:1px solid var(--border);">
+            <input type="date" id="endDate">
             <button onclick="generateStatement()" style="background:var(--accent); color:black;">Generate Ledger</button>
         </div>
 
@@ -157,22 +181,20 @@
     </div>
 
     <script>
-       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCa0bKCKqoWXMfuvg0OGBldGxHGczbQUFM",
-  authDomain: "neet-ledger.firebaseapp.com",
-  projectId: "neet-ledger",
-  storageBucket: "neet-ledger.firebasestorage.app",
-  messagingSenderId: "350923661650",
-  appId: "1:350923661650:web:0a3f8ab66b726419b55a8b",
-  measurementId: "G-NBHRPJZMSW"
-};
-        // Initialize Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyCa0bKCKqoWXMfuvg0OGBldGxHGczbQUFM",
+          authDomain: "neet-ledger.firebaseapp.com",
+          projectId: "neet-ledger",
+          storageBucket: "neet-ledger.firebasestorage.app",
+          messagingSenderId: "350923661650",
+          appId: "1:350923661650:web:0a3f8ab66b726419b55a8b",
+          measurementId: "G-NBHRPJZMSW"
+        };
+        
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // 1. Auth Logic
         function handleAuth(type) {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
@@ -197,7 +219,6 @@ const firebaseConfig = {
 
         function logout() { auth.signOut(); }
 
-        // 2. Shared Cloud Logic
         async function saveToCloud() {
             const date = document.getElementById('currentDate').value;
             const perfValue = document.querySelector('input[name="perfGrade"]:checked')?.value || "N/A";
@@ -209,16 +230,20 @@ const firebaseConfig = {
                     notes: document.getElementById('streamNotes').value,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                alert("Data Saved to Shared Cloud!");
+                alert("Data Saved!");
                 disableWriting();
-            } catch (error) {
-                alert("Error saving: " + error.message);
-            }
+            } catch (error) { alert("Error saving: " + error.message); }
         }
 
         async function loadFromCloud() {
             const selectedDate = document.getElementById('currentDate').value;
-            document.getElementById('displayDate').value = selectedDate;
+            
+            // --- DATE FORMATTING LOGIC ---
+            // Split YYYY-MM-DD and rearrange to DD-MM-YYYY
+            const dateParts = selectedDate.split('-');
+            const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+            document.getElementById('displayDate').value = formattedDate;
+            // -----------------------------
             
             try {
                 const doc = await db.collection("global_logs").doc(selectedDate).get();
@@ -228,20 +253,30 @@ const firebaseConfig = {
                     document.getElementById('streamNotes').value = data.notes;
                     const radios = document.getElementsByName('perfGrade');
                     radios.forEach(r => r.checked = (r.value === data.performance));
+                    document.getElementById('deleteBtn').style.display = "inline-block"; 
                     disableWriting();
                 } else {
                     document.getElementById('workStatus').checked = false;
                     document.getElementById('streamNotes').value = "";
                     document.getElementsByName('perfGrade').forEach(r => r.checked = false);
+                    document.getElementById('deleteBtn').style.display = "none";
                     enableWriting();
                     document.getElementById('editBtn').style.display = "none";
                 }
-            } catch (error) {
-                console.log("Load error:", error);
+            } catch (error) { console.log("Load error:", error); }
+        }
+
+        async function deleteFromCloud() {
+            const date = document.getElementById('currentDate').value;
+            if (confirm("Delete data for this date?")) {
+                try {
+                    await db.collection("global_logs").doc(date).delete();
+                    alert("Deleted!");
+                    loadFromCloud();
+                } catch (error) { alert("Delete error: " + error.message); }
             }
         }
 
-        // 3. UI Toggles
         function enableWriting() {
             document.getElementById('streamNotes').removeAttribute('readonly');
             document.getElementById('streamNotes').classList.add('editable-now');
@@ -249,6 +284,7 @@ const firebaseConfig = {
             document.getElementsByName('perfGrade').forEach(r => r.disabled = false);
             document.getElementById('editBtn').style.display = "none";
             document.getElementById('saveBtn').style.display = "inline-block";
+            document.getElementById('deleteBtn').style.display = "none";
         }
 
         function disableWriting() {
@@ -258,41 +294,30 @@ const firebaseConfig = {
             document.getElementsByName('perfGrade').forEach(r => r.disabled = true);
             document.getElementById('editBtn').style.display = "inline-block";
             document.getElementById('saveBtn').style.display = "none";
+            document.getElementById('deleteBtn').style.display = "inline-block";
         }
 
-        // 4. Ledger Generator
         async function generateStatement() {
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
             if(!start || !end) return alert("Select dates!");
-
             const body = document.getElementById('bankBody');
-            body.innerHTML = "<tr><td colspan='4'>Fetching from cloud...</td></tr>";
-
+            body.innerHTML = "<tr><td colspan='4'>Fetching...</td></tr>";
             try {
                 const snapshot = await db.collection("global_logs").where(firebase.firestore.FieldPath.documentId(), ">=", start).where(firebase.firestore.FieldPath.documentId(), "<=", end).get();
-                
                 body.innerHTML = "";
                 document.getElementById('rangeText').innerText = start + " to " + end;
-                
                 if (snapshot.empty) {
-                    body.innerHTML = "<tr><td colspan='4'>No records found.</td></tr>";
+                    body.innerHTML = "<tr><td colspan='4'>No records.</td></tr>";
                 } else {
                     snapshot.forEach(doc => {
                         const d = doc.data();
-                        body.innerHTML += `<tr>
-                            <td>${doc.id}</td>
-                            <td style="color:${d.completed ? '#3fb950':'#f85149'}">${d.completed ? 'COMPLETED' : 'PENDING'}</td>
-                            <td>${d.performance}</td>
-                            <td>${d.notes}</td>
-                        </tr>`;
+                        body.innerHTML += `<tr><td>${doc.id}</td><td style="color:${d.completed ? '#3fb950':'#f85149'}">${d.completed ? 'COMPLETED' : 'PENDING'}</td><td>${d.performance}</td><td>${d.notes}</td></tr>`;
                     });
                 }
                 document.getElementById('statementArea').style.display = "block";
                 window.scrollTo(0, document.body.scrollHeight);
-            } catch (error) {
-                alert("Statement Error: " + error.message);
-            }
+            } catch (error) { alert("Error: " + error.message); }
         }
     </script>
 </body>
