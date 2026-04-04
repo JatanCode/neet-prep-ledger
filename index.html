@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET Prep Ledger | Dark Mode</title>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --card: #161b22;
+            --accent: #58a6ff;
+            --text: #c9d1d9;
+            --subtext: #8b949e;
+            --border: #30363d;
+            --save-color: #238636;
+            --edit-color: #9e6a03;
+            --high: #3fb950;
+            --norm: #d29922;
+            --low: #f85149;
+        }
+
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+
+        /* Navigation Controls */
+        .controls, .statement-controls {
+            margin-bottom: 20px; background: var(--card); padding: 15px; border: 1px solid var(--border); border-radius: 8px; display: flex; gap: 15px; align-items: center;
+        }
+
+        .marksheet {
+            width: 100%; max-width: 650px; background: var(--card); padding: 40px; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .header { text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 30px; padding-bottom: 10px; }
+        .header h1 { color: var(--accent); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
+
+        .section { margin-bottom: 25px; }
+        .label { font-weight: bold; color: var(--subtext); font-size: 0.75rem; display: block; text-transform: uppercase; margin-bottom: 10px; }
+
+        /* NEET Mastery Grading */
+        .grade-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0d1117; padding: 15px; border-radius: 8px; border: 1px solid var(--border);
+        }
+
+        .grade-option { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; border-radius: 6px; transition: 0.2s; border: 1px solid transparent; }
+        .grade-option:hover { background: #21262d; border-color: var(--border); }
+        .grade-option input { accent-color: var(--accent); width: 18px; height: 18px; }
+        
+        .grade-label { font-size: 0.9rem; font-weight: 500; }
+
+        /* Inputs */
+        .field-input { width: 100%; border: none; border-bottom: 1px solid var(--border); font-size: 1.1rem; padding: 12px 0; background: transparent; color: var(--text); outline: none; font-family: 'Consolas', monospace; }
+        .editable-now { background: #1c2128 !important; border-bottom: 2px solid var(--accent) !important; padding: 10px !important; border-radius: 4px; }
+
+        textarea { line-height: 1.6; }
+
+        .btn-group { margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end; }
+        button { padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        
+        /* Bank Statement (Dark Mode) */
+        #statementArea { display: none; width: 100%; max-width: 900px; background: #0d1117; padding: 40px; border: 2px solid var(--border); margin-top: 40px; color: #fff; }
+        .bank-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .bank-table th, .bank-table td { border: 1px solid var(--border); padding: 12px; text-align: left; font-size: 0.85rem; }
+        .bank-table th { background: #161b22; color: var(--accent); }
+
+        @media print {
+            body { background: white; color: black; }
+            .controls, .statement-controls, .marksheet, .btn-group { display: none !important; }
+            #statementArea { display: block !important; border: 1px solid #000; color: #000; background: white; }
+            .bank-table th, .bank-table td { border: 1px solid #000; color: #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <label>Study Date:</label>
+        <input type="date" id="currentDate" onchange="loadDateData()" style="background:#0d1117; color:white; border:1px solid var(--border); padding:5px;">
+    </div>
+
+    <div class="marksheet">
+        <div class="header">
+            <h1>NEET PREP JOURNEY LEDGER</h1>
+            <p style="font-size: 0.8rem; color: var(--subtext);">Class 11 - Future Doctor Record</p>
+        </div>
+
+        <div class="section">
+            <span class="label">Date of Revision</span>
+            <input type="text" id="displayDate" class="field-input" readonly>
+        </div>
+
+        <div class="section">
+            <span class="label">Daily Work Goal Status</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" id="workStatus" style="width:20px; height:20px; accent-color:var(--save-color);"> 
+                <span style="font-weight:bold;">All Topics Completed</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <span class="label">Syllabus Mastery Level</span>
+            <div class="grade-container">
+                <label class="grade-option">
+                    <input type="radio" name="perfGrade" value="Expert"> 
+                    <span class="grade-label" style="color:var(--high)">🧠 High</span>
+                </label>
+                <label class="grade-option">
+                    <input type="radio" name="perfGrade" value="Good"> 
+                    <span class="grade-label" style="color:var(--norm)">📖 Normal</span>
+                </label>
+                <label class="grade-option">
+                    <input type="radio" name="perfGrade" value="Weak"> 
+                    <span class="grade-label" style="color:var(--low)">⚠️ Low</span>
+                </label>
+                <label class="grade-option">
+                    <input type="radio" name="perfGrade" value="No Progress"> 
+                    <span class="grade-label">❌ No Progress Today</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="section">
+            <span class="label">Topics Covered / MCQs Solved</span>
+            <textarea id="streamNotes" class="field-input" rows="8" style="resize: none;" placeholder="e.g. Physics: Optics (20 MCQs), Biology: Cell Division notes..."></textarea>
+        </div>
+
+        <div class="btn-group">
+            <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white;">Edit Entries</button>
+            <button id="saveBtn" onclick="saveDateData()" style="background:var(--save-color); color:white;">Save to Memory</button>
+        </div>
+    </div>
+
+    <div class="statement-controls">
+        <strong>ACADEMIC STATEMENT:</strong>
+        <input type="date" id="startDate" style="background:#0d1117; color:white; border:1px solid var(--border);"> 
+        <span>to</span>
+        <input type="date" id="endDate" style="background:#0d1117; color:white; border:1px solid var(--border);">
+        <button onclick="generateStatement()" style="background:var(--accent); color:black;">Generate Ledger</button>
+    </div>
+
+    <div id="statementArea">
+        <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--border); padding-bottom:10px;">
+            <div>
+                <h2 style="margin:0; color:var(--accent);">NEET ASPIRANT LEDGER</h2>
+                <p style="font-size:0.8rem;">Student: Jack Bhaiya | ID: #NEET-2026</p>
+            </div>
+            <div style="text-align:right;">
+                <p><strong>REVISION SUMMARY</strong></p>
+                <p id="rangeText" style="font-size:0.8rem;"></p>
+            </div>
+        </div>
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>DATE</th>
+                    <th>GOAL</th>
+                    <th>MASTERY</th>
+                    <th>TOPICS & NOTES</th>
+                </tr>
+            </thead>
+            <tbody id="bankBody"></tbody>
+        </table>
+        <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
+            <p style="font-size:0.7rem; color:var(--subtext);">"The hard work of today is the MBBS seat of tomorrow."</p>
+            <button onclick="window.print()" style="background:#fff; color:#000;">Download PDF</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('currentDate').valueAsDate = new Date();
+
+        function loadDateData() {
+            const selectedDate = document.getElementById('currentDate').value;
+            document.getElementById('displayDate').value = selectedDate;
+            const allData = JSON.parse(localStorage.getItem('neetPrepData')) || {};
+            const dayData = allData[selectedDate] || {};
+
+            document.getElementById('workStatus').checked = dayData.completed || false;
+            document.getElementById('streamNotes').value = dayData.notes || "";
+            
+            const radios = document.getElementsByName('perfGrade');
+            let hasSelection = false;
+            radios.forEach(r => {
+                r.checked = (r.value === dayData.performance);
+                if(r.checked) hasSelection = true;
+            });
+
+            // If entry exists, lock it. If new, open it.
+            hasSelection ? disableWriting() : enableWriting();
+            if (!hasSelection) document.getElementById('editBtn').style.display = "none";
+        }
+
+        function enableWriting() {
+            document.getElementById('streamNotes').removeAttribute('readonly');
+            document.getElementById('streamNotes').classList.add('editable-now');
+            document.getElementById('workStatus').disabled = false;
+            document.getElementsByName('perfGrade').forEach(r => r.disabled = false);
+            document.getElementById('editBtn').style.display = "none";
+            document.getElementById('saveBtn').style.display = "inline-block";
+        }
+
+        function disableWriting() {
+            document.getElementById('streamNotes').setAttribute('readonly', true);
+            document.getElementById('streamNotes').classList.remove('editable-now');
+            document.getElementById('workStatus').disabled = true;
+            document.getElementsByName('perfGrade').forEach(r => r.disabled = true);
+            document.getElementById('editBtn').style.display = "inline-block";
+            document.getElementById('saveBtn').style.display = "none";
+        }
+
+        function saveDateData() {
+            const selectedDate = document.getElementById('currentDate').value;
+            const perfValue = document.querySelector('input[name="perfGrade"]:checked')?.value || "N/A";
+            
+            let allData = JSON.parse(localStorage.getItem('neetPrepData')) || {};
+            allData[selectedDate] = {
+                completed: document.getElementById('workStatus').checked,
+                performance: perfValue,
+                notes: document.getElementById('streamNotes').value
+            };
+            localStorage.setItem('neetPrepData', JSON.stringify(allData));
+            disableWriting();
+        }
+
+        function generateStatement() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            if(!start || !end) return alert("Select start and end dates.");
+
+            document.getElementById('rangeText').innerText = start + " to " + end;
+            const allData = JSON.parse(localStorage.getItem('neetPrepData')) || {};
+            const body = document.getElementById('bankBody');
+            body.innerHTML = "";
+
+            Object.keys(allData).sort().forEach(date => {
+                if(date >= start && date <= end) {
+                    const d = allData[date];
+                    body.innerHTML += `<tr>
+                        <td>${date}</td>
+                        <td style="color:${d.completed ? '#3fb950':'#f85149'}">${d.completed ? 'COMPLETED' : 'PENDING'}</td>
+                        <td>${d.performance}</td>
+                        <td>${d.notes}</td>
+                    </tr>`;
+                }
+            });
+            document.getElementById('statementArea').style.display = "block";
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        loadDateData();
+    </script>
+</body>
+</html>
