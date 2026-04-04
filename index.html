@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEET Prep Ledger | Dark Mode</title>
+    <title>NEET Prep Ledger | Cloud Sync</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --bg: #0b0f19;
@@ -21,14 +25,18 @@
 
         body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
 
-        /* Navigation Controls */
+        /* Auth Screen */
+        #authScreen { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; margin-top: 50px; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #0d1117; border: 1px solid var(--border); color: white; border-radius: 6px; box-sizing: border-box; }
+
+        /* Main App UI */
+        #appUI { display: none; width: 100%; max-width: 650px; }
+
         .controls, .statement-controls {
             margin-bottom: 20px; background: var(--card); padding: 15px; border: 1px solid var(--border); border-radius: 8px; display: flex; gap: 15px; align-items: center;
         }
 
-        .marksheet {
-            width: 100%; max-width: 650px; background: var(--card); padding: 40px; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+        .marksheet { background: var(--card); padding: 40px; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative;}
 
         .header { text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 30px; padding-bottom: 10px; }
         .header h1 { color: var(--accent); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
@@ -36,27 +44,19 @@
         .section { margin-bottom: 25px; }
         .label { font-weight: bold; color: var(--subtext); font-size: 0.75rem; display: block; text-transform: uppercase; margin-bottom: 10px; }
 
-        /* NEET Mastery Grading */
-        .grade-container {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0d1117; padding: 15px; border-radius: 8px; border: 1px solid var(--border);
-        }
-
+        .grade-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0d1117; padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
         .grade-option { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; border-radius: 6px; transition: 0.2s; border: 1px solid transparent; }
         .grade-option:hover { background: #21262d; border-color: var(--border); }
         .grade-option input { accent-color: var(--accent); width: 18px; height: 18px; }
-        
         .grade-label { font-size: 0.9rem; font-weight: 500; }
 
-        /* Inputs */
         .field-input { width: 100%; border: none; border-bottom: 1px solid var(--border); font-size: 1.1rem; padding: 12px 0; background: transparent; color: var(--text); outline: none; font-family: 'Consolas', monospace; }
         .editable-now { background: #1c2128 !important; border-bottom: 2px solid var(--accent) !important; padding: 10px !important; border-radius: 4px; }
 
-        textarea { line-height: 1.6; }
-
         .btn-group { margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end; }
         button { padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        
-        /* Bank Statement (Dark Mode) */
+        .btn-logout { background: transparent; color: var(--low); border: 1px solid var(--low); padding: 5px 10px; font-size: 0.7rem; float: right;}
+
         #statementArea { display: none; width: 100%; max-width: 900px; background: #0d1117; padding: 40px; border: 2px solid var(--border); margin-top: 40px; color: #fff; }
         .bank-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         .bank-table th, .bank-table td { border: 1px solid var(--border); padding: 12px; text-align: left; font-size: 0.85rem; }
@@ -64,7 +64,7 @@
 
         @media print {
             body { background: white; color: black; }
-            .controls, .statement-controls, .marksheet, .btn-group { display: none !important; }
+            .controls, .statement-controls, .marksheet, .btn-group, .btn-logout, #authScreen { display: none !important; }
             #statementArea { display: block !important; border: 1px solid #000; color: #000; background: white; }
             .bank-table th, .bank-table td { border: 1px solid #000; color: #000; }
         }
@@ -72,123 +72,176 @@
 </head>
 <body>
 
-    <div class="controls">
-        <label>Study Date:</label>
-        <input type="date" id="currentDate" onchange="loadDateData()" style="background:#0d1117; color:white; border:1px solid var(--border); padding:5px;">
-    </div>
-
-    <div class="marksheet">
-        <div class="header">
-            <h1>NEET PREP JOURNEY LEDGER</h1>
-            <p style="font-size: 0.8rem; color: var(--subtext);">Class 11 - Future Doctor Record</p>
-        </div>
-
-        <div class="section">
-            <span class="label">Date of Revision</span>
-            <input type="text" id="displayDate" class="field-input" readonly>
-        </div>
-
-        <div class="section">
-            <span class="label">Daily Work Goal Status</span>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="workStatus" style="width:20px; height:20px; accent-color:var(--save-color);"> 
-                <span style="font-weight:bold;">All Topics Completed</span>
-            </div>
-        </div>
-
-        <div class="section">
-            <span class="label">Syllabus Mastery Level</span>
-            <div class="grade-container">
-                <label class="grade-option">
-                    <input type="radio" name="perfGrade" value="Expert"> 
-                    <span class="grade-label" style="color:var(--high)">🧠 High</span>
-                </label>
-                <label class="grade-option">
-                    <input type="radio" name="perfGrade" value="Good"> 
-                    <span class="grade-label" style="color:var(--norm)">📖 Normal</span>
-                </label>
-                <label class="grade-option">
-                    <input type="radio" name="perfGrade" value="Weak"> 
-                    <span class="grade-label" style="color:var(--low)">⚠️ Low</span>
-                </label>
-                <label class="grade-option">
-                    <input type="radio" name="perfGrade" value="No Progress"> 
-                    <span class="grade-label">❌ No Progress Today</span>
-                </label>
-            </div>
-        </div>
-
-        <div class="section">
-            <span class="label">Topics Covered / MCQs Solved</span>
-            <textarea id="streamNotes" class="field-input" rows="8" style="resize: none;" placeholder="e.g. Physics: Optics (20 MCQs), Biology: Cell Division notes..."></textarea>
-        </div>
-
-        <div class="btn-group">
-            <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white;">Edit Entries</button>
-            <button id="saveBtn" onclick="saveDateData()" style="background:var(--save-color); color:white;">Save to Memory</button>
+    <div id="authScreen">
+        <h2 style="color:var(--accent)">NEET LEDGER ACCESS</h2>
+        <p style="font-size: 0.8rem; color: var(--subtext);">Enter credentials to sync study data</p>
+        <input type="email" id="email" class="auth-input" placeholder="Email Address">
+        <input type="password" id="password" class="auth-input" placeholder="Password">
+        <div style="margin-top: 10px;">
+            <button onclick="handleAuth('login')" style="background:var(--accent); color:black; width: 100%; margin-bottom: 10px;">LOGIN</button>
+            <button onclick="handleAuth('signup')" style="background:transparent; color:var(--text); border:1px solid var(--border); width: 100%;">CREATE ACCOUNT</button>
         </div>
     </div>
 
-    <div class="statement-controls">
-        <strong>ACADEMIC STATEMENT:</strong>
-        <input type="date" id="startDate" style="background:#0d1117; color:white; border:1px solid var(--border);"> 
-        <span>to</span>
-        <input type="date" id="endDate" style="background:#0d1117; color:white; border:1px solid var(--border);">
-        <button onclick="generateStatement()" style="background:var(--accent); color:black;">Generate Ledger</button>
-    </div>
+    <div id="appUI">
+        <button class="btn-logout" onclick="logout()">LOGOUT</button>
+        <div style="clear:both"></div>
 
-    <div id="statementArea">
-        <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--border); padding-bottom:10px;">
-            <div>
-                <h2 style="margin:0; color:var(--accent);">NEET ASPIRANT LEDGER</h2>
-                <p style="font-size:0.8rem;">Student: Jack Bhaiya | ID: #NEET-2026</p>
+        <div class="controls">
+            <label>Study Date:</label>
+            <input type="date" id="currentDate" onchange="loadFromCloud()" style="background:#0d1117; color:white; border:1px solid var(--border); padding:5px;">
+        </div>
+
+        <div class="marksheet">
+            <div class="header">
+                <h1>NEET PREP JOURNEY LEDGER</h1>
+                <p style="font-size: 0.8rem; color: var(--subtext);">Class 11 - Future Doctor Record (Cloud Shared)</p>
             </div>
-            <div style="text-align:right;">
-                <p><strong>REVISION SUMMARY</strong></p>
-                <p id="rangeText" style="font-size:0.8rem;"></p>
+
+            <div class="section">
+                <span class="label">Date of Revision</span>
+                <input type="text" id="displayDate" class="field-input" readonly>
+            </div>
+
+            <div class="section">
+                <span class="label">Daily Work Goal Status</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="workStatus" style="width:20px; height:20px; accent-color:var(--save-color);"> 
+                    <span style="font-weight:bold;">All Topics Completed</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <span class="label">Syllabus Mastery Level</span>
+                <div class="grade-container">
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="Expert"><span class="grade-label" style="color:var(--high)">🧠 High</span></label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="Good"><span class="grade-label" style="color:var(--norm)">📖 Normal</span></label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="Weak"><span class="grade-label" style="color:var(--low)">⚠️ Low</span></label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="No Progress"><span class="grade-label">❌ No Progress</span></label>
+                </div>
+            </div>
+
+            <div class="section">
+                <span class="label">Topics Covered / MCQs Solved</span>
+                <textarea id="streamNotes" class="field-input" rows="8" style="resize: none;" placeholder="e.g. Physics: Optics..."></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white;">Edit Entries</button>
+                <button id="saveBtn" onclick="saveToCloud()" style="background:var(--save-color); color:white;">Save to Cloud</button>
             </div>
         </div>
-        <table class="bank-table">
-            <thead>
-                <tr>
-                    <th>DATE</th>
-                    <th>GOAL</th>
-                    <th>MASTERY</th>
-                    <th>TOPICS & NOTES</th>
-                </tr>
-            </thead>
-            <tbody id="bankBody"></tbody>
-        </table>
-        <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
-            <p style="font-size:0.7rem; color:var(--subtext);">"The hard work of today is the MBBS seat of tomorrow."</p>
-            <button onclick="window.print()" style="background:#fff; color:#000;">Download PDF</button>
+
+        <div class="statement-controls" style="margin-top: 30px;">
+            <strong>ACADEMIC STATEMENT:</strong>
+            <input type="date" id="startDate" style="background:#0d1117; color:white; border:1px solid var(--border);"> 
+            <span>to</span>
+            <input type="date" id="endDate" style="background:#0d1117; color:white; border:1px solid var(--border);">
+            <button onclick="generateStatement()" style="background:var(--accent); color:black;">Generate Ledger</button>
+        </div>
+
+        <div id="statementArea">
+            <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--border); padding-bottom:10px;">
+                <div><h2 style="margin:0; color:var(--accent);">NEET ASPIRANT LEDGER</h2><p style="font-size:0.8rem;">Student: Shared Account | ID: #NEET-2026</p></div>
+                <div style="text-align:right;"><p><strong>REVISION SUMMARY</strong></p><p id="rangeText" style="font-size:0.8rem;"></p></div>
+            </div>
+            <table class="bank-table">
+                <thead><tr><th>DATE</th><th>GOAL</th><th>MASTERY</th><th>TOPICS & NOTES</th></tr></thead>
+                <tbody id="bankBody"></tbody>
+            </table>
+            <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
+                <p style="font-size:0.7rem; color:var(--subtext);">"The hard work of today is the MBBS seat of tomorrow."</p>
+                <button onclick="window.print()" style="background:#fff; color:#000;">Download PDF</button>
+            </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('currentDate').valueAsDate = new Date();
+        // REPLACE THIS BLOCK WITH YOUR DATA FROM FIREBASE CONSOLE
+        const firebaseConfig = {
+            apiKey: "PASTE_YOUR_API_KEY_HERE",
+            authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "PASTE_YOUR_PROJECT_ID",
+            storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "PASTE_YOUR_ID",
+            appId: "PASTE_YOUR_APP_ID"
+        };
 
-        function loadDateData() {
-            const selectedDate = document.getElementById('currentDate').value;
-            document.getElementById('displayDate').value = selectedDate;
-            const allData = JSON.parse(localStorage.getItem('neetPrepData')) || {};
-            const dayData = allData[selectedDate] || {};
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-            document.getElementById('workStatus').checked = dayData.completed || false;
-            document.getElementById('streamNotes').value = dayData.notes || "";
-            
-            const radios = document.getElementsByName('perfGrade');
-            let hasSelection = false;
-            radios.forEach(r => {
-                r.checked = (r.value === dayData.performance);
-                if(r.checked) hasSelection = true;
-            });
-
-            // If entry exists, lock it. If new, open it.
-            hasSelection ? disableWriting() : enableWriting();
-            if (!hasSelection) document.getElementById('editBtn').style.display = "none";
+        // 1. Auth Logic
+        function handleAuth(type) {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            if (type === 'signup') {
+                auth.createUserWithEmailAndPassword(email, pass).catch(e => alert(e.message));
+            } else {
+                auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
+            }
         }
 
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('appUI').style.display = 'block';
+                document.getElementById('currentDate').valueAsDate = new Date();
+                loadFromCloud();
+            } else {
+                document.getElementById('authScreen').style.display = 'block';
+                document.getElementById('appUI').style.display = 'none';
+            }
+        });
+
+        function logout() { auth.signOut(); }
+
+        // 2. Shared Cloud Logic
+        async function saveToCloud() {
+            const date = document.getElementById('currentDate').value;
+            const perfValue = document.querySelector('input[name="perfGrade"]:checked')?.value || "N/A";
+            
+            try {
+                await db.collection("global_logs").doc(date).set({
+                    completed: document.getElementById('workStatus').checked,
+                    performance: perfValue,
+                    notes: document.getElementById('streamNotes').value,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Data Saved to Shared Cloud!");
+                disableWriting();
+            } catch (error) {
+                alert("Error saving: " + error.message);
+            }
+        }
+
+        async function loadFromCloud() {
+            const selectedDate = document.getElementById('currentDate').value;
+            document.getElementById('displayDate').value = selectedDate;
+            
+            try {
+                const doc = await db.collection("global_logs").doc(selectedDate).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('workStatus').checked = data.completed;
+                    document.getElementById('streamNotes').value = data.notes;
+                    const radios = document.getElementsByName('perfGrade');
+                    radios.forEach(r => r.checked = (r.value === data.performance));
+                    disableWriting();
+                } else {
+                    document.getElementById('workStatus').checked = false;
+                    document.getElementById('streamNotes').value = "";
+                    document.getElementsByName('perfGrade').forEach(r => r.checked = false);
+                    enableWriting();
+                    document.getElementById('editBtn').style.display = "none";
+                }
+            } catch (error) {
+                console.log("Load error:", error);
+            }
+        }
+
+        // 3. UI Toggles
         function enableWriting() {
             document.getElementById('streamNotes').removeAttribute('readonly');
             document.getElementById('streamNotes').classList.add('editable-now');
@@ -207,46 +260,40 @@
             document.getElementById('saveBtn').style.display = "none";
         }
 
-        function saveDateData() {
-            const selectedDate = document.getElementById('currentDate').value;
-            const perfValue = document.querySelector('input[name="perfGrade"]:checked')?.value || "N/A";
-            
-            let allData = JSON.parse(localStorage.getItem('neetPrepData')) || {};
-            allData[selectedDate] = {
-                completed: document.getElementById('workStatus').checked,
-                performance: perfValue,
-                notes: document.getElementById('streamNotes').value
-            };
-            localStorage.setItem('neetPrepData', JSON.stringify(allData));
-            disableWriting();
-        }
-
-        function generateStatement() {
+        // 4. Ledger Generator
+        async function generateStatement() {
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
-            if(!start || !end) return alert("Select start and end dates.");
+            if(!start || !end) return alert("Select dates!");
 
-            document.getElementById('rangeText').innerText = start + " to " + end;
-            const allData = JSON.parse(localStorage.getItem('neetPrepData')) || {};
             const body = document.getElementById('bankBody');
-            body.innerHTML = "";
+            body.innerHTML = "<tr><td colspan='4'>Fetching from cloud...</td></tr>";
 
-            Object.keys(allData).sort().forEach(date => {
-                if(date >= start && date <= end) {
-                    const d = allData[date];
-                    body.innerHTML += `<tr>
-                        <td>${date}</td>
-                        <td style="color:${d.completed ? '#3fb950':'#f85149'}">${d.completed ? 'COMPLETED' : 'PENDING'}</td>
-                        <td>${d.performance}</td>
-                        <td>${d.notes}</td>
-                    </tr>`;
+            try {
+                const snapshot = await db.collection("global_logs").where(firebase.firestore.FieldPath.documentId(), ">=", start).where(firebase.firestore.FieldPath.documentId(), "<=", end).get();
+                
+                body.innerHTML = "";
+                document.getElementById('rangeText').innerText = start + " to " + end;
+                
+                if (snapshot.empty) {
+                    body.innerHTML = "<tr><td colspan='4'>No records found.</td></tr>";
+                } else {
+                    snapshot.forEach(doc => {
+                        const d = doc.data();
+                        body.innerHTML += `<tr>
+                            <td>${doc.id}</td>
+                            <td style="color:${d.completed ? '#3fb950':'#f85149'}">${d.completed ? 'COMPLETED' : 'PENDING'}</td>
+                            <td>${d.performance}</td>
+                            <td>${d.notes}</td>
+                        </tr>`;
+                    });
                 }
-            });
-            document.getElementById('statementArea').style.display = "block";
-            window.scrollTo(0, document.body.scrollHeight);
+                document.getElementById('statementArea').style.display = "block";
+                window.scrollTo(0, document.body.scrollHeight);
+            } catch (error) {
+                alert("Statement Error: " + error.message);
+            }
         }
-
-        loadDateData();
     </script>
 </body>
 </html>
