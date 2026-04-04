@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEET Prep Ledger | Cloud Sync</title>
+    <title>NEET Prep Ledger | Cloud Sync & Timer</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -21,9 +21,11 @@
             --high: #3fb950;
             --norm: #d29922;
             --low: #f85149;
+            /* Timer Colors */
+            --glass: rgba(0, 0, 0, 0.85);
         }
 
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
 
         /* AUTH SCREEN STYLE */
         #authScreen { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; margin-top: 50px; }
@@ -32,35 +34,11 @@
         /* MAIN APP UI */
         #appUI { display: none; width: 100%; max-width: 650px; }
 
-        /* DATE INPUT FIXES */
-        input[type="date"] {
-            background: #0d1117;
-            color: white;
-            border: 1px solid var(--border);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-family: inherit;
-            color-scheme: dark; /* Forces browser native picker to dark mode */
-            outline: none;
-        }
-
-        /* MAKES CALENDAR ICON VISIBLE ON DARK THEME */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1) brightness(1.5); /* Flips black to white and makes it bright */
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        input[type="date"]::-webkit-calendar-picker-indicator:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
         .controls, .statement-controls {
             margin-bottom: 20px; background: var(--card); padding: 15px; border: 1px solid var(--border); border-radius: 8px; display: flex; gap: 15px; align-items: center;
         }
 
         .marksheet { background: var(--card); padding: 40px; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative;}
-
         .header { text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 30px; padding-bottom: 10px; }
         .header h1 { color: var(--accent); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
 
@@ -71,25 +49,37 @@
         .grade-option { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; border-radius: 6px; transition: 0.2s; border: 1px solid transparent; }
         .grade-option:hover { background: #21262d; border-color: var(--border); }
         .grade-option input { accent-color: var(--accent); width: 18px; height: 18px; }
-        .grade-label { font-size: 0.9rem; font-weight: 500; }
 
         .field-input { width: 100%; border: none; border-bottom: 1px solid var(--border); font-size: 1.1rem; padding: 12px 0; background: transparent; color: var(--text); outline: none; font-family: 'Consolas', monospace; }
-        .editable-now { background: #1c2128 !important; border-bottom: 2px solid var(--accent) !important; padding: 10px !important; border-radius: 4px; }
-
         .btn-group { margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end; }
         button { padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-logout { background: transparent; color: var(--low); border: 1px solid var(--low); padding: 5px 10px; font-size: 0.7rem; float: right;}
+
+        /* --- POMODORO TIMER OVERLAY --- */
+        #pomo-overlay {
+            position: fixed; bottom: 90px; right: 20px; width: 320px;
+            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 24px; padding: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6); display: none; z-index: 1000; text-align: center;
+        }
+        .pomo-display { font-size: 3.5rem; font-weight: 900; margin: 15px 0; color: #fff; font-variant-numeric: tabular-nums; }
+        .pomo-inputs { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .pomo-inputs input { width: 50px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: #fff; text-align: center; padding: 5px; }
+        
+        /* Floating Button */
+        #pomo-toggle {
+            position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 1001;
+        }
 
         #statementArea { display: none; width: 100%; max-width: 900px; background: #0d1117; padding: 40px; border: 2px solid var(--border); margin-top: 40px; color: #fff; }
         .bank-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         .bank-table th, .bank-table td { border: 1px solid var(--border); padding: 12px; text-align: left; font-size: 0.85rem; }
-        .bank-table th { background: #161b22; color: var(--accent); }
 
-        @media print {
-            body { background: white; color: black; }
-            .controls, .statement-controls, .marksheet, .btn-group, .btn-logout, #authScreen { display: none !important; }
-            #statementArea { display: block !important; border: 1px solid #000; color: #000; background: white; }
-            .bank-table th, .bank-table td { border: 1px solid #000; color: #000; }
+        @media all and (display-mode: picture-in-picture) {
+            body { background: #000; }
+            #pomo-overlay { position: static; display: block; border: none; backdrop-filter: none; width: 100%; padding: 0; background: transparent; }
+            #appUI, #pomo-toggle, #pip-btn { display: none !important; }
         }
     </style>
 </head>
@@ -97,227 +87,161 @@
 
     <div id="authScreen">
         <h2 style="color:var(--accent)">NEET LEDGER ACCESS</h2>
-        <p style="font-size: 0.8rem; color: var(--subtext);">Enter credentials to sync study data</p>
         <input type="email" id="email" class="auth-input" placeholder="Email Address">
         <input type="password" id="password" class="auth-input" placeholder="Password">
-        <div style="margin-top: 10px;">
-            <button onclick="handleAuth('login')" style="background:var(--accent); color:black; width: 100%; margin-bottom: 10px;">LOGIN</button>
-            <button onclick="handleAuth('signup')" style="background:transparent; color:var(--text); border:1px solid var(--border); width: 100%;">CREATE ACCOUNT</button>
-        </div>
+        <button onclick="handleAuth('login')" style="background:var(--accent); color:black; width: 100%; margin-bottom: 10px;">LOGIN</button>
+        <button onclick="handleAuth('signup')" style="background:transparent; color:var(--text); border:1px solid var(--border); width: 100%;">CREATE ACCOUNT</button>
     </div>
 
     <div id="appUI">
-        <button class="btn-logout" onclick="logout()">LOGOUT</button>
-        <div style="clear:both"></div>
-
+        <button class="btn-logout" onclick="logout()" style="background:transparent; color:var(--low); border: 1px solid var(--low); float:right; padding:5px 10px;">LOGOUT</button>
+        
         <div class="controls">
-            <label>Date Selector :</label>
-            <input type="date" id="currentDate" onchange="loadFromCloud()">
+            <label>Current Date :</label>
+            <input type="date" id="currentDate" onchange="loadFromCloud()" style="background:#0d1117; color:white; border:1px solid var(--border); padding:5px; border-radius:5px; color-scheme:dark;">
         </div>
 
         <div class="marksheet">
-            <div class="header">
-                <h1>NEET PREP JOURNEY LEDGER</h1>
-                <p style="font-size: 0.8rem; color: var(--subtext);">Class 11 - Future Doctor Record </p>
-            </div>
-
+            <div class="header"><h1>NEET PREP LEDGER</h1></div>
             <div class="section">
-                <span class="label">Date of Revision</span>
-                <input type="text" id="displayDate" class="field-input" readonly>
+                <span class="label">Daily Goal</span>
+                <input type="checkbox" id="workStatus"> <b>All Topics Completed</b>
             </div>
-
             <div class="section">
-                <span class="label">Daily Work Goal Status</span>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="checkbox" id="workStatus" style="width:20px; height:20px; accent-color:var(--save-color);"> 
-                    <span style="font-weight:bold;">All Topics Completed</span>
-                </div>
-            </div>
-
-            <div class="section">
-                <span class="label">Syllabus Mastery Level</span>
+                <span class="label">Syllabus Mastery</span>
                 <div class="grade-container">
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="Expert"><span class="grade-label" style="color:var(--high)">🧠 High</span></label>
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="Good"><span class="grade-label" style="color:var(--norm)">📖 Normal</span></label>
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="Weak"><span class="grade-label" style="color:var(--low)">⚠️ Low</span></label>
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="No Progress"><span class="grade-label">❌ No Progress</span></label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="Expert"> High</label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="Good"> Normal</label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="Weak"> Low</label>
                 </div>
             </div>
-
             <div class="section">
-                <span class="label">Topics Covered </span>
-                <textarea id="streamNotes" class="field-input" rows="8" style="resize: none;" placeholder="e.g. Physics: Optics..."></textarea>
+                <span class="label">Topics Covered</span>
+                <textarea id="streamNotes" class="field-input" rows="5" placeholder="Topics..."></textarea>
             </div>
-
             <div class="btn-group">
-                <button id="deleteBtn" onclick="deleteFromCloud()" style="background:var(--low); color:white; display:none;">Delete Data</button>
-                <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white;">Edit Entries</button>
-                <button id="saveBtn" onclick="saveToCloud()" style="background:var(--save-color); color:white;">Save to Cloud</button>
-            </div>
-        </div>
-
-        <div class="statement-controls" style="margin-top: 30px;">
-            <strong>ACADEMIC STATEMENT:</strong>
-            <input type="date" id="startDate"> 
-            <span>to</span>
-            <input type="date" id="endDate">
-            <button onclick="generateStatement()" style="background:var(--accent); color:black;">Generate Ledger</button>
-        </div>
-
-        <div id="statementArea">
-            <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--border); padding-bottom:10px;">
-                <div><h2 style="margin:0; color:var(--accent);">NEET ASPIRANT LEDGER</h2><p style="font-size:0.8rem;">Student: Shared Account | ID: #NEET-2026</p></div>
-                <div style="text-align:right;"><p><strong>REVISION SUMMARY</strong></p><p id="rangeText" style="font-size:0.8rem;"></p></div>
-            </div>
-            <table class="bank-table">
-                <thead><tr><th>DATE</th><th>GOAL</th><th>MASTERY</th><th>TOPICS & NOTES</th></tr></thead>
-                <tbody id="bankBody"></tbody>
-            </table>
-            <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
-                <p style="font-size:0.7rem; color:var(--subtext);">"The hard work of today is the MBBS seat of tomorrow."</p>
-                <button onclick="window.print()" style="background:#fff; color:#000;">Download PDF</button>
+                <button id="saveBtn" onclick="saveToCloud()" style="background:var(--save-color); color:white;">SAVE CLOUD</button>
+                <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white; display:none;">EDIT</button>
             </div>
         </div>
     </div>
 
+    <div id="pomo-overlay">
+        <h3 style="margin:0; font-size:0.8rem; letter-spacing:2px; color:var(--accent)">FOCUS TIMER</h3>
+        <div class="pomo-inputs">
+            <input type="number" id="ph" value="0">
+            <input type="number" id="pm" value="25">
+        </div>
+        <div class="pomo-display" id="pDisplay">00:25:00</div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="togglePomo()" id="pBtn" style="flex:1; background:#fff; color:#000;">START</button>
+            <button onclick="resetPomo()" style="flex:1; background:rgba(255,255,255,0.1); color:#fff;">RESET</button>
+        </div>
+        <button id="pip-btn" onclick="startPiP()" style="width:100%; margin-top:15px; background:var(--glass); border:1px solid var(--border); color:#888; font-size:0.7rem;">POP OUT (PiP)</button>
+    </div>
+
+    <div id="pomo-toggle" onclick="toggleTimerVisibility()">
+        <span style="font-size:24px;">⏱️</span>
+    </div>
+
     <script>
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
-          apiKey: "AIzaSyCa0bKCKqoWXMfuvg0OGBldGxHGczbQUFM",
-          authDomain: "neet-ledger.firebaseapp.com",
-          projectId: "neet-ledger",
-          storageBucket: "neet-ledger.firebasestorage.app",
-          messagingSenderId: "350923661650",
-          appId: "1:350923661650:web:0a3f8ab66b726419b55a8b",
-          measurementId: "G-NBHRPJZMSW"
+            apiKey: "AIzaSyCa0bKCKqoWXMfuvg0OGBldGxHGczbQUFM",
+            authDomain: "neet-ledger.firebaseapp.com",
+            projectId: "neet-ledger",
+            storageBucket: "neet-ledger.firebasestorage.app",
+            messagingSenderId: "350923661650",
+            appId: "1:350923661650:web:0a3f8ab66b726419b55a8b"
         };
-        
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        function handleAuth(type) {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            if (type === 'signup') {
-                auth.createUserWithEmailAndPassword(email, pass).catch(e => alert(e.message));
-            } else {
-                auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
-            }
+        // --- AUTH & LEDGER LOGIC ---
+        function handleAuth(t) {
+            const e = document.getElementById('email').value, p = document.getElementById('password').value;
+            t === 'signup' ? auth.createUserWithEmailAndPassword(e,p) : auth.signInWithEmailAndPassword(e,p);
         }
-
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('authScreen').style.display = 'none';
-                document.getElementById('appUI').style.display = 'block';
-                document.getElementById('currentDate').valueAsDate = new Date();
-                loadFromCloud();
-            } else {
-                document.getElementById('authScreen').style.display = 'block';
-                document.getElementById('appUI').style.display = 'none';
-            }
+        auth.onAuthStateChanged(u => {
+            document.getElementById('authScreen').style.display = u ? 'none' : 'block';
+            document.getElementById('appUI').style.display = u ? 'block' : 'none';
+            if(u) { document.getElementById('currentDate').valueAsDate = new Date(); loadFromCloud(); }
         });
-
         function logout() { auth.signOut(); }
 
         async function saveToCloud() {
-            const date = document.getElementById('currentDate').value;
-            const perfValue = document.querySelector('input[name="perfGrade"]:checked')?.value || "N/A";
-            
-            try {
-                await db.collection("global_logs").doc(date).set({
-                    completed: document.getElementById('workStatus').checked,
-                    performance: perfValue,
-                    notes: document.getElementById('streamNotes').value,
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("Data Saved!");
-                disableWriting();
-            } catch (error) { alert("Error saving: " + error.message); }
+            const d = document.getElementById('currentDate').value;
+            const p = document.querySelector('input[name="perfGrade"]:checked')?.value || "N/A";
+            await db.collection("global_logs").doc(d).set({
+                completed: document.getElementById('workStatus').checked,
+                performance: p,
+                notes: document.getElementById('streamNotes').value
+            });
+            alert("Saved!");
         }
 
         async function loadFromCloud() {
-            const selectedDate = document.getElementById('currentDate').value;
-            
-            // --- DATE FORMATTING LOGIC ---
-            // Split YYYY-MM-DD and rearrange to DD-MM-YYYY
-            const dateParts = selectedDate.split('-');
-            const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-            document.getElementById('displayDate').value = formattedDate;
-            // -----------------------------
-            
-            try {
-                const doc = await db.collection("global_logs").doc(selectedDate).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    document.getElementById('workStatus').checked = data.completed;
-                    document.getElementById('streamNotes').value = data.notes;
-                    const radios = document.getElementsByName('perfGrade');
-                    radios.forEach(r => r.checked = (r.value === data.performance));
-                    document.getElementById('deleteBtn').style.display = "inline-block"; 
-                    disableWriting();
-                } else {
-                    document.getElementById('workStatus').checked = false;
-                    document.getElementById('streamNotes').value = "";
-                    document.getElementsByName('perfGrade').forEach(r => r.checked = false);
-                    document.getElementById('deleteBtn').style.display = "none";
-                    enableWriting();
-                    document.getElementById('editBtn').style.display = "none";
-                }
-            } catch (error) { console.log("Load error:", error); }
-        }
-
-        async function deleteFromCloud() {
-            const date = document.getElementById('currentDate').value;
-            if (confirm("Delete data for this date?")) {
-                try {
-                    await db.collection("global_logs").doc(date).delete();
-                    alert("Deleted!");
-                    loadFromCloud();
-                } catch (error) { alert("Delete error: " + error.message); }
+            const d = document.getElementById('currentDate').value;
+            const doc = await db.collection("global_logs").doc(d).get();
+            if(doc.exists) {
+                const data = doc.data();
+                document.getElementById('workStatus').checked = data.completed;
+                document.getElementById('streamNotes').value = data.notes;
+                document.getElementsByName('perfGrade').forEach(r => r.checked = r.value === data.performance);
             }
         }
 
-        function enableWriting() {
-            document.getElementById('streamNotes').removeAttribute('readonly');
-            document.getElementById('streamNotes').classList.add('editable-now');
-            document.getElementById('workStatus').disabled = false;
-            document.getElementsByName('perfGrade').forEach(r => r.disabled = false);
-            document.getElementById('editBtn').style.display = "none";
-            document.getElementById('saveBtn').style.display = "inline-block";
-            document.getElementById('deleteBtn').style.display = "none";
+        // --- POMODORO TIMER LOGIC ---
+        let pSecs = 1500, pLoop = null, pRunning = false;
+
+        function toggleTimerVisibility() {
+            const o = document.getElementById('pomo-overlay');
+            o.style.display = o.style.display === 'block' ? 'none' : 'block';
         }
 
-        function disableWriting() {
-            document.getElementById('streamNotes').setAttribute('readonly', true);
-            document.getElementById('streamNotes').classList.remove('editable-now');
-            document.getElementById('workStatus').disabled = true;
-            document.getElementsByName('perfGrade').forEach(r => r.disabled = true);
-            document.getElementById('editBtn').style.display = "inline-block";
-            document.getElementById('saveBtn').style.display = "none";
-            document.getElementById('deleteBtn').style.display = "inline-block";
+        function refreshPDisplay() {
+            const h = Math.floor(pSecs/3600), m = Math.floor((pSecs%3600)/60), s = pSecs%60;
+            document.getElementById('pDisplay').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         }
 
-        async function generateStatement() {
-            const start = document.getElementById('startDate').value;
-            const end = document.getElementById('endDate').value;
-            if(!start || !end) return alert("Select dates!");
-            const body = document.getElementById('bankBody');
-            body.innerHTML = "<tr><td colspan='4'>Fetching...</td></tr>";
-            try {
-                const snapshot = await db.collection("global_logs").where(firebase.firestore.FieldPath.documentId(), ">=", start).where(firebase.firestore.FieldPath.documentId(), "<=", end).get();
-                body.innerHTML = "";
-                document.getElementById('rangeText').innerText = start + " to " + end;
-                if (snapshot.empty) {
-                    body.innerHTML = "<tr><td colspan='4'>No records.</td></tr>";
-                } else {
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        body.innerHTML += `<tr><td>${doc.id}</td><td style="color:${d.completed ? '#3fb950':'#f85149'}">${d.completed ? 'COMPLETED' : 'PENDING'}</td><td>${d.performance}</td><td>${d.notes}</td></tr>`;
-                    });
+        function togglePomo() {
+            const btn = document.getElementById('pBtn');
+            if(pRunning) {
+                clearInterval(pLoop); pRunning = false; btn.textContent = "RESUME";
+            } else {
+                if(!pLoop && pSecs === 1500) {
+                    pSecs = (parseInt(document.getElementById('ph').value)||0)*3600 + (parseInt(document.getElementById('pm').value)||0)*60;
                 }
-                document.getElementById('statementArea').style.display = "block";
-                window.scrollTo(0, document.body.scrollHeight);
-            } catch (error) { alert("Error: " + error.message); }
+                pRunning = true; btn.textContent = "PAUSE";
+                pLoop = setInterval(() => {
+                    if(pSecs > 0) { pSecs--; refreshPDisplay(); }
+                    else { clearInterval(pLoop); alert("Study Session Complete!"); resetPomo(); }
+                }, 1000);
+            }
+        }
+
+        function resetPomo() {
+            clearInterval(pLoop); pLoop = null; pRunning = false;
+            pSecs = (parseInt(document.getElementById('ph').value)||0)*3600 + (parseInt(document.getElementById('pm').value)||0)*60;
+            document.getElementById('pBtn').textContent = "START";
+            refreshPDisplay();
+        }
+
+        async function startPiP() {
+            if(!window.documentPictureInPicture) return alert("Use Chrome/Edge");
+            const overlay = document.getElementById('pomo-overlay');
+            const pipW = await window.documentPictureInPicture.requestWindow({ width: 340, height: 400 });
+            
+            const style = document.createElement('style');
+            style.textContent = Array.from(document.styleSheets[0].cssRules).map(r => r.cssText).join('');
+            pipW.document.head.appendChild(style);
+            
+            pipW.document.body.append(overlay);
+            pipW.addEventListener("pagehide", () => {
+                document.body.append(overlay);
+                overlay.style.display = 'none'; // Hide when returning
+            });
         }
     </script>
 </body>
