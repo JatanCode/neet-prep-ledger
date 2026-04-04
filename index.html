@@ -1,9 +1,13 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEET Prep Ledger | Cloud Sync</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -21,114 +25,157 @@
             --high: #3fb950;
             --norm: #d29922;
             --low: #f85149;
+            /* Font Definitions */
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-display: 'Outfit', sans-serif;
         }
 
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        body { 
+            font-family: var(--font-main); 
+            background-color: var(--bg); 
+            color: var(--text); 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            -webkit-font-smoothing: antialiased;
+        }
 
-        #authScreen { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; margin-top: 50px; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #0d1117; border: 1px solid var(--border); color: white; border-radius: 6px; box-sizing: border-box; }
+        #authScreen { 
+            background: var(--card); 
+            padding: 40px; 
+            border-radius: 20px; 
+            border: 1px solid var(--border); 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center; 
+            margin-top: 50px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .auth-input { 
+            font-family: var(--font-main);
+            width: 100%; 
+            padding: 14px; 
+            margin: 12px 0; 
+            background: #0d1117; 
+            border: 1px solid var(--border); 
+            color: white; 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-size: 0.9rem;
+        }
 
         #appUI { display: none; width: 100%; max-width: 650px; }
 
         input[type="date"] {
-            background: #0d1117; color: white; border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-family: inherit; color-scheme: dark; outline: none;
+            font-family: var(--font-display);
+            background: #0d1117; color: white; border: 1px solid var(--border); 
+            padding: 10px 15px; border-radius: 8px; color-scheme: dark; outline: none;
+            font-weight: 500;
         }
-
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) brightness(1.5); cursor: pointer; padding: 5px; border-radius: 3px; }
 
         .controls, .statement-controls {
-            margin-bottom: 20px; background: var(--card); padding: 15px; border: 1px solid var(--border); border-radius: 8px; display: flex; gap: 15px; align-items: center;
+            margin-bottom: 20px; background: var(--card); padding: 20px; 
+            border: 1px solid var(--border); border-radius: 12px; display: flex; 
+            gap: 15px; align-items: center; font-size: 0.9rem;
         }
 
-        .marksheet { background: var(--card); padding: 40px; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative;}
+        .marksheet { 
+            background: var(--card); padding: 45px; border: 1px solid var(--border); 
+            border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            position: relative;
+        }
 
-        .header { text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 30px; padding-bottom: 10px; }
-        .header h1 { color: var(--accent); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
+        .header { text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 35px; padding-bottom: 15px; }
+        .header h1 { 
+            font-family: var(--font-display);
+            color: var(--accent); margin: 0; font-size: 1.6rem; 
+            font-weight: 800; text-transform: uppercase; letter-spacing: 3px; 
+        }
 
-        .section { margin-bottom: 25px; }
-        .label { font-weight: bold; color: var(--subtext); font-size: 0.75rem; display: block; text-transform: uppercase; margin-bottom: 10px; }
+        .section { margin-bottom: 30px; }
+        .label { 
+            font-weight: 700; color: var(--subtext); font-size: 0.7rem; 
+            display: block; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px;
+        }
 
-        .grade-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0d1117; padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
-        .grade-option { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; border-radius: 6px; transition: 0.2s; border: 1px solid transparent; position: relative; }
-        .grade-option:hover { background: #21262d; border-color: var(--border); }
+        .grade-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #0d1117; padding: 18px; border-radius: 12px; border: 1px solid var(--border); }
+        .grade-option { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; border-radius: 8px; transition: 0.2s; border: 1px solid transparent; }
+        .grade-option:hover { background: #21262d; }
 
-        /* --- THE FIX: CUSTOM RADIO BUTTON STYLING --- */
         .grade-option input[type="radio"] {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-radius: 50%;
-            background: transparent;
-            display: inline-grid;
-            place-content: center;
-            margin: 0;
-            cursor: pointer;
-            opacity: 1 !important; /* Forces visibility */
+            appearance: none; -webkit-appearance: none; width: 22px; height: 22px;
+            border: 2px solid var(--border); border-radius: 50%; background: transparent;
+            display: inline-grid; place-content: center; margin: 0; cursor: pointer;
         }
 
         .grade-option input[type="radio"]::before {
-            content: "";
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            transform: scale(0);
-            transition: 120ms transform ease-in-out;
+            content: ""; width: 12px; height: 12px; border-radius: 50%;
+            transform: scale(0); transition: 150ms transform ease-in-out;
             background-color: var(--accent);
         }
 
-        .grade-option input[type="radio"]:checked {
-            border-color: var(--accent);
+        .grade-option input[type="radio"]:checked::before { transform: scale(1); }
+
+        .grade-label { font-family: var(--font-main); font-size: 0.95rem; font-weight: 600; }
+
+        .field-input { 
+            font-family: var(--font-main); width: 100%; border: none; 
+            border-bottom: 1px solid var(--border); font-size: 1.05rem; 
+            padding: 12px 0; background: transparent; color: var(--text); 
+            outline: none; line-height: 1.6;
+        }
+        
+        #displayDate { font-family: var(--font-display); font-weight: 600; letter-spacing: 1px; }
+
+        .editable-now { background: #1c2128 !important; border-bottom: 2px solid var(--accent) !important; padding: 12px !important; border-radius: 8px; }
+
+        button { 
+            font-family: var(--font-main); padding: 12px 28px; border: none; 
+            border-radius: 10px; cursor: pointer; font-weight: 700; 
+            font-size: 0.85rem; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        
+        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        .btn-logout { 
+            background: transparent; color: var(--low); border: 1px solid var(--low); 
+            padding: 6px 14px; font-size: 0.65rem; float: right; border-radius: 6px;
         }
 
-        .grade-option input[type="radio"]:checked::before {
-            transform: scale(1);
+        #statementArea { 
+            display: none; width: 100%; max-width: 900px; background: #0d1117; 
+            padding: 40px; border: 2px solid var(--border); margin-top: 40px; 
+            border-radius: 16px; color: #fff; 
         }
 
-        /* Ensure disabled radios don't fade out */
-        .grade-option input[type="radio"]:disabled {
-            opacity: 1 !important;
-            cursor: default;
+        .bank-table { font-family: var(--font-main); width: 100%; border-collapse: collapse; margin-top: 25px; }
+        .bank-table th { 
+            font-family: var(--font-display); text-transform: uppercase; 
+            letter-spacing: 1px; font-weight: 700; background: #161b22; 
+            color: var(--accent); padding: 15px; border: 1px solid var(--border);
         }
-
-        /* Color-specific dots when checked */
-        .grade-option:nth-child(1) input:checked::before { background-color: var(--high); }
-        .grade-option:nth-child(2) input:checked::before { background-color: var(--norm); }
-        .grade-option:nth-child(3) input:checked::before { background-color: var(--low); }
-        /* ------------------------------------------- */
-
-        .grade-label { font-size: 0.9rem; font-weight: 500; opacity: 1 !important; }
-
-        .field-input { width: 100%; border: none; border-bottom: 1px solid var(--border); font-size: 1.1rem; padding: 12px 0; background: transparent; color: var(--text); outline: none; font-family: 'Consolas', monospace; }
-        .editable-now { background: #1c2128 !important; border-bottom: 2px solid var(--accent) !important; padding: 10px !important; border-radius: 4px; }
-
-        .btn-group { margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end; }
-        button { padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-logout { background: transparent; color: var(--low); border: 1px solid var(--low); padding: 5px 10px; font-size: 0.7rem; float: right;}
-
-        #statementArea { display: none; width: 100%; max-width: 900px; background: #0d1117; padding: 40px; border: 2px solid var(--border); margin-top: 40px; color: #fff; }
-        .bank-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .bank-table th, .bank-table td { border: 1px solid var(--border); padding: 12px; text-align: left; font-size: 0.85rem; }
-        .bank-table th { background: #161b22; color: var(--accent); }
+        .bank-table td { border: 1px solid var(--border); padding: 14px; font-size: 0.9rem; }
 
         @media print {
-            body { background: white; color: black; }
-            .controls, .statement-controls, .marksheet, .btn-group, .btn-logout, #authScreen { display: none !important; }
-            #statementArea { display: block !important; border: 1px solid #000; color: #000; background: white; }
-            .bank-table th, .bank-table td { border: 1px solid #000; color: #000; }
+            body { background: white !important; color: black !important; }
+            #statementArea { display: block !important; border: 1px solid #000; color: #000; background: white; width: 100%; }
+            .bank-table th, .bank-table td { border: 1px solid #000 !important; color: #000 !important; }
+            button, .controls, .marksheet, .btn-logout { display: none !important; }
         }
     </style>
 </head>
 <body>
 
     <div id="authScreen">
-        <h2 style="color:var(--accent)">NEET LEDGER ACCESS</h2>
-        <p style="font-size: 0.8rem; color: var(--subtext);">Enter credentials to sync study data</p>
+        <h2 style="font-family: var(--font-display); font-weight: 800; color:var(--accent); margin-bottom: 5px;">NEET ACCESS</h2>
+        <p style="font-size: 0.85rem; color: var(--subtext); margin-bottom: 25px;">Cloud Sync Academic Ledger</p>
         <input type="email" id="email" class="auth-input" placeholder="Email Address">
         <input type="password" id="password" class="auth-input" placeholder="Password">
-        <div style="margin-top: 10px;">
-            <button onclick="handleAuth('login')" style="background:var(--accent); color:black; width: 100%; margin-bottom: 10px;">LOGIN</button>
+        <div style="margin-top: 20px;">
+            <button onclick="handleAuth('login')" style="background:var(--accent); color:black; width: 100%; margin-bottom: 12px;">LOGIN</button>
             <button onclick="handleAuth('signup')" style="background:transparent; color:var(--text); border:1px solid var(--border); width: 100%;">CREATE ACCOUNT</button>
         </div>
     </div>
@@ -138,76 +185,83 @@
         <div style="clear:both"></div>
 
         <div class="controls">
-            <label>Date Selector :</label>
+            <label style="font-weight: 700; color: var(--accent);">STUDY DATE:</label>
             <input type="date" id="currentDate" onchange="loadFromCloud()">
         </div>
 
         <div class="marksheet">
             <div class="header">
-                <h1>NEET PREP JOURNEY LEDGER</h1>
-                <p style="font-size: 0.8rem; color: var(--subtext);">Class 11 - Future Doctor Record </p>
+                <h1>JOURNAL LEDGER</h1>
+                <p style="font-size: 0.8rem; color: var(--subtext); font-weight: 600; letter-spacing: 1px;">ASPIRANT TRACKER • CLASS 11</p>
             </div>
 
             <div class="section">
-                <span class="label">Date of Revision</span>
+                <span class="label">Date of Entry</span>
                 <input type="text" id="displayDate" class="field-input" readonly>
             </div>
 
             <div class="section">
-                <span class="label">Daily Work Goal Status</span>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="checkbox" id="workStatus" style="width:20px; height:20px; accent-color:var(--save-color);"> 
-                    <span style="font-weight:bold;">All Topics Completed</span>
+                <span class="label">Work Goal Status</span>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <input type="checkbox" id="workStatus" style="width:22px; height:22px; accent-color:var(--save-color); cursor: pointer;"> 
+                    <span style="font-weight:700; font-size: 1rem;">All Topics Completed</span>
                 </div>
             </div>
 
             <div class="section">
                 <span class="label">Syllabus Mastery Level</span>
                 <div class="grade-container">
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="Expert"><span class="grade-label" style="color:var(--high)">🧠 High</span></label>
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="Good"><span class="grade-label" style="color:var(--norm)">📖 Normal</span></label>
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="Weak"><span class="grade-label" style="color:var(--low)">⚠️ Low</span></label>
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="No Progress"><span class="grade-label">❌ No Progress</span></label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="Expert"><span class="grade-label" style="color:var(--high)">🧠 High Mastery</span></label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="Good"><span class="grade-label" style="color:var(--norm)">📖 Normal Progress</span></label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="Weak"><span class="grade-label" style="color:var(--low)">⚠️ Low Retention</span></label>
+                    <label class="grade-option"><input type="radio" name="perfGrade" value="No Progress"><span class="grade-label">❌ No Study</span></label>
                 </div>
             </div>
 
             <div class="section">
-                <span class="label">Topics Covered </span>
-                <textarea id="streamNotes" class="field-input" rows="8" style="resize: none;" placeholder="e.g. Physics: Optics..."></textarea>
+                <span class="label">Daily Topics & Notes</span>
+                <textarea id="streamNotes" class="field-input" rows="6" style="resize: none;" placeholder="Physics: Kinematics (NCERT + DPPS)..."></textarea>
             </div>
 
-            <div class="btn-group">
-                <button id="deleteBtn" onclick="deleteFromCloud()" style="background:var(--low); color:white; display:none;">Delete Data</button>
-                <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white;">Edit Entries</button>
+            <div class="btn-group" style="display:flex; gap:12px; justify-content: flex-end; margin-top: 20px;">
+                <button id="deleteBtn" onclick="deleteFromCloud()" style="background:var(--low); color:white; display:none;">Delete</button>
+                <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white;">Edit</button>
                 <button id="saveBtn" onclick="saveToCloud()" style="background:var(--save-color); color:white;">Save to Cloud</button>
             </div>
         </div>
 
         <div class="statement-controls" style="margin-top: 30px;">
-            <strong>ACADEMIC STATEMENT:</strong>
+            <strong style="color:var(--accent)">LEDGER RANGE:</strong>
             <input type="date" id="startDate"> 
-            <span>to</span>
+            <span style="font-weight: 700;">to</span>
             <input type="date" id="endDate">
-            <button onclick="generateStatement()" style="background:var(--accent); color:black;">Generate Ledger</button>
+            <button onclick="generateStatement()" style="background:var(--accent); color:black; padding: 10px 15px;">Generate</button>
         </div>
 
         <div id="statementArea">
-            <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--border); padding-bottom:10px;">
-                <div><h2 style="margin:0; color:var(--accent);">NEET ASPIRANT LEDGER</h2><p style="font-size:0.8rem;">Student: Shared Account | ID: #NEET-2026</p></div>
-                <div style="text-align:right;"><p><strong>REVISION SUMMARY</strong></p><p id="rangeText" style="font-size:0.8rem;"></p></div>
+            <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--border); padding-bottom:15px;">
+                <div>
+                    <h2 style="margin:0; color:var(--accent); font-family: var(--font-display); font-weight: 800;">NEET ASPIRANT LEDGER</h2>
+                    <p style="font-size:0.8rem; font-weight: 600;">Student ID: #NEET-2026</p>
+                </div>
+                <div style="text-align:right;">
+                    <p style="margin:0; font-weight: 800;">REVISION SUMMARY</p>
+                    <p id="rangeText" style="font-size:0.8rem; font-family: var(--font-display); font-weight: 600;"></p>
+                </div>
             </div>
             <table class="bank-table">
                 <thead><tr><th>DATE</th><th>GOAL</th><th>MASTERY</th><th>TOPICS & NOTES</th></tr></thead>
                 <tbody id="bankBody"></tbody>
             </table>
-            <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
-                <p style="font-size:0.7rem; color:var(--subtext);">"The hard work of today is the MBBS seat of tomorrow."</p>
-                <button onclick="window.print()" style="background:#fff; color:#000;">Download PDF</button>
+            <div style="margin-top:30px; display:flex; justify-content:space-between; align-items:center;">
+                <p style="font-size:0.75rem; color:var(--subtext); font-style: italic; font-weight: 500;">"The hard work of today is the MBBS seat of tomorrow."</p>
+                <button onclick="window.print()" style="background:#fff; color:#000; text-transform: none; font-size: 0.75rem;">Download PDF</button>
             </div>
         </div>
     </div>
 
     <script>
+        // ... (Script remains exactly the same as your functional original) ...
         const firebaseConfig = {
           apiKey: "AIzaSyCa0bKCKqoWXMfuvg0OGBldGxHGczbQUFM",
           authDomain: "neet-ledger.firebaseapp.com",
@@ -264,6 +318,7 @@
 
         async function loadFromCloud() {
             const selectedDate = document.getElementById('currentDate').value;
+            if(!selectedDate) return;
             const dateParts = selectedDate.split('-');
             const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
             document.getElementById('displayDate').value = formattedDate;
@@ -325,21 +380,21 @@
             const end = document.getElementById('endDate').value;
             if(!start || !end) return alert("Select dates!");
             const body = document.getElementById('bankBody');
-            body.innerHTML = "<tr><td colspan='4'>Fetching...</td></tr>";
+            body.innerHTML = "<tr><td colspan='4'>Fetching study records...</td></tr>";
             try {
                 const snapshot = await db.collection("global_logs").where(firebase.firestore.FieldPath.documentId(), ">=", start).where(firebase.firestore.FieldPath.documentId(), "<=", end).get();
                 body.innerHTML = "";
                 document.getElementById('rangeText').innerText = start + " to " + end;
                 if (snapshot.empty) {
-                    body.innerHTML = "<tr><td colspan='4'>No records.</td></tr>";
+                    body.innerHTML = "<tr><td colspan='4'>No records found for this period.</td></tr>";
                 } else {
                     snapshot.forEach(doc => {
                         const d = doc.data();
-                        body.innerHTML += `<tr><td>${doc.id}</td><td style="color:${d.completed ? '#3fb950':'#f85149'}">${d.completed ? 'COMPLETED' : 'PENDING'}</td><td>${d.performance}</td><td>${d.notes}</td></tr>`;
+                        body.innerHTML += `<tr><td style="font-family:var(--font-display); font-weight:600;">${doc.id}</td><td style="font-weight:700; color:${d.completed ? '#3fb950':'#f85149'}">${d.completed ? 'COMPLETED' : 'PENDING'}</td><td style="font-weight:600;">${d.performance}</td><td>${d.notes}</td></tr>`;
                     });
                 }
                 document.getElementById('statementArea').style.display = "block";
-                window.scrollTo(0, document.body.scrollHeight);
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             } catch (error) { alert("Error: " + error.message); }
         }
     </script>
