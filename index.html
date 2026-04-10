@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -25,25 +26,29 @@
             --high: #3fb950;
             --norm: #d29922;
             --low: #f85149;
-            /* Font Definitions */
             --font-main: 'Plus Jakarta Sans', sans-serif;
             --font-display: 'Outfit', sans-serif;
         }
+
+        * { box-sizing: border-box; }
 
         body { 
             font-family: var(--font-main); 
             background-color: var(--bg); 
             color: var(--text); 
-            padding: 20px; 
+            padding: 15px; 
+            margin: 0;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
+            min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
 
+        /* --- Auth Screen --- */
         #authScreen { 
             background: var(--card); 
-            padding: 40px; 
+            padding: 40px 25px; 
             border-radius: 20px; 
             border: 1px solid var(--border); 
             width: 100%; 
@@ -57,132 +62,146 @@
             font-family: var(--font-main);
             width: 100%; 
             padding: 14px; 
-            margin: 12px 0; 
+            margin: 10px 0; 
             background: #0d1117; 
             border: 1px solid var(--border); 
             color: white; 
             border-radius: 10px; 
-            box-sizing: border-box; 
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
 
-        #appUI { display: none; width: 100%; max-width: 650px; }
+        /* --- App UI Container --- */
+        #appUI { display: none; width: 100%; max-width: 700px; }
+
+        .btn-logout { 
+            background: transparent; color: var(--low); border: 1px solid var(--low); 
+            padding: 8px 16px; font-size: 0.7rem; border-radius: 6px;
+            margin-bottom: 15px; cursor: pointer; float: right;
+        }
+
+        /* --- Responsive Controls --- */
+        .controls, .statement-controls {
+            margin-bottom: 20px; background: var(--card); padding: 18px; 
+            border: 1px solid var(--border); border-radius: 12px; display: flex; 
+            flex-wrap: wrap; gap: 12px; align-items: center; font-size: 0.9rem;
+            clear: both;
+        }
 
         input[type="date"] {
             font-family: var(--font-display);
             background: #0d1117; color: white; border: 1px solid var(--border); 
-            padding: 10px 15px; border-radius: 8px; color-scheme: dark; outline: none;
-            font-weight: 500;
+            padding: 10px; border-radius: 8px; color-scheme: dark; outline: none;
+            flex-grow: 1;
         }
 
-        .controls, .statement-controls {
-            margin-bottom: 20px; background: var(--card); padding: 20px; 
-            border: 1px solid var(--border); border-radius: 12px; display: flex; 
-            gap: 15px; align-items: center; font-size: 0.9rem;
-        }
-
+        /* --- Marksheet Design --- */
         .marksheet { 
-            background: var(--card); padding: 45px; border: 1px solid var(--border); 
+            background: var(--card); padding: 30px 20px; border: 1px solid var(--border); 
             border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            position: relative;
         }
 
-        .header { text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 35px; padding-bottom: 15px; }
+        @media (min-width: 600px) { .marksheet { padding: 45px; } }
+
+        .header { text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 30px; padding-bottom: 15px; }
         .header h1 { 
             font-family: var(--font-display);
-            color: var(--accent); margin: 0; font-size: 1.6rem; 
-            font-weight: 800; text-transform: uppercase; letter-spacing: 3px; 
+            color: var(--accent); margin: 0; font-size: 1.4rem; 
+            font-weight: 800; text-transform: uppercase; letter-spacing: 2px; 
         }
 
-        .section { margin-bottom: 30px; }
+        .section { margin-bottom: 25px; }
         .label { 
             font-weight: 700; color: var(--subtext); font-size: 0.7rem; 
-            display: block; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px;
+            display: block; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;
         }
 
-        .grade-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #0d1117; padding: 18px; border-radius: 12px; border: 1px solid var(--border); }
-        .grade-option { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; border-radius: 8px; transition: 0.2s; border: 1px solid transparent; }
+        /* Responsive Grid for Radio Buttons */
+        .grade-container { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 10px; 
+            background: #0d1117; 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+        }
+
+        @media (min-width: 480px) { .grade-container { grid-template-columns: 1fr 1fr; } }
+
+        .grade-option { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; border-radius: 8px; transition: 0.2s; }
         .grade-option:hover { background: #21262d; }
 
         .grade-option input[type="radio"] {
-            appearance: none; -webkit-appearance: none; width: 22px; height: 22px;
+            appearance: none; -webkit-appearance: none; width: 20px; height: 20px;
             border: 2px solid var(--border); border-radius: 50%; background: transparent;
-            display: inline-grid; place-content: center; margin: 0; cursor: pointer;
+            cursor: pointer; position: relative; flex-shrink: 0;
         }
 
-        .grade-option input[type="radio"]::before {
-            content: ""; width: 12px; height: 12px; border-radius: 50%;
-            transform: scale(0); transition: 150ms transform ease-in-out;
-            background-color: var(--accent);
+        .grade-option input[type="radio"]:checked::before {
+            content: ""; width: 10px; height: 10px; border-radius: 50%;
+            background-color: var(--accent); position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
         }
-
-        .grade-option input[type="radio"]:checked::before { transform: scale(1); }
-
-        .grade-label { font-family: var(--font-main); font-size: 0.95rem; font-weight: 600; }
 
         .field-input { 
             font-family: var(--font-main); width: 100%; border: none; 
-            border-bottom: 1px solid var(--border); font-size: 1.05rem; 
+            border-bottom: 1px solid var(--border); font-size: 1rem; 
             padding: 12px 0; background: transparent; color: var(--text); 
-            outline: none; line-height: 1.6;
+            outline: none;
         }
-        
-        #displayDate { font-family: var(--font-display); font-weight: 600; letter-spacing: 1px; }
 
-        .editable-now { background: #1c2128 !important; border-bottom: 2px solid var(--accent) !important; padding: 12px !important; border-radius: 8px; }
+        textarea.field-input {
+            border: 1px solid var(--border); padding: 12px; border-radius: 10px;
+            margin-top: 5px;
+        }
+
+        /* Responsive Button Group */
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        
+        @media (min-width: 480px) { 
+            .btn-group { flex-direction: row; justify-content: flex-end; }
+        }
 
         button { 
-            font-family: var(--font-main); padding: 12px 28px; border: none; 
+            font-family: var(--font-main); padding: 12px 24px; border: none; 
             border-radius: 10px; cursor: pointer; font-weight: 700; 
-            font-size: 0.85rem; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        
-        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-
-        .btn-logout { 
-            background: transparent; color: var(--low); border: 1px solid var(--low); 
-            padding: 6px 14px; font-size: 0.65rem; float: right; border-radius: 6px;
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
         }
 
+        /* --- Statement Area --- */
         #statementArea { 
-            display: none; width: 100%; max-width: 900px; background: #0d1117; 
-            padding: 40px; border: 2px solid var(--border); margin-top: 40px; 
-            border-radius: 16px; color: #fff; 
+            display: none; width: 100%; background: #0d1117; 
+            padding: 25px 15px; border: 1px solid var(--border); margin-top: 30px; 
+            border-radius: 16px; overflow-x: auto;
         }
 
-        .bank-table { font-family: var(--font-main); width: 100%; border-collapse: collapse; margin-top: 25px; }
-        .bank-table th { 
-            font-family: var(--font-display); text-transform: uppercase; 
-            letter-spacing: 1px; font-weight: 700; background: #161b22; 
-            color: var(--accent); padding: 15px; border: 1px solid var(--border);
-        }
-        .bank-table td { border: 1px solid var(--border); padding: 14px; font-size: 0.9rem; }
+        .bank-table { width: 100%; border-collapse: collapse; min-width: 600px; margin-top: 20px; }
+        .bank-table th { background: #161b22; color: var(--accent); padding: 12px; border: 1px solid var(--border); text-align: left; }
+        .bank-table td { border: 1px solid var(--border); padding: 12px; font-size: 0.85rem; }
 
         @media print {
-            body { background: white !important; color: black !important; }
-            #statementArea { display: block !important; border: 1px solid #000; color: #000; background: white; width: 100%; }
+            body { background: white !important; color: black !important; padding: 0; }
+            #statementArea { display: block !important; border: none; background: white; width: 100%; }
             .bank-table th, .bank-table td { border: 1px solid #000 !important; color: #000 !important; }
-            button, .controls, .marksheet, .btn-logout { display: none !important; }
+            button, .controls, .marksheet, .btn-logout, .statement-controls { display: none !important; }
         }
     </style>
 </head>
 <body>
 
     <div id="authScreen">
-        <h2 style="font-family: var(--font-display); font-weight: 800; color:var(--accent); margin-bottom: 5px;">NEET ACCESS</h2>
+        <h2 style="font-family: var(--font-display); font-weight: 800; color:var(--accent); margin: 0;">NEET ACCESS</h2>
         <p style="font-size: 0.85rem; color: var(--subtext); margin-bottom: 25px;">Cloud Sync Academic Ledger</p>
         <input type="email" id="email" class="auth-input" placeholder="Email Address">
         <input type="password" id="password" class="auth-input" placeholder="Password">
-        <div style="margin-top: 20px;">
-            <button onclick="handleAuth('login')" style="background:var(--accent); color:black; width: 100%; margin-bottom: 12px;">LOGIN</button>
+        <div style="margin-top: 15px;">
+            <button onclick="handleAuth('login')" style="background:var(--accent); color:black; width: 100%; margin-bottom: 10px;">LOGIN</button>
             <button onclick="handleAuth('signup')" style="background:transparent; color:var(--text); border:1px solid var(--border); width: 100%;">CREATE ACCOUNT</button>
         </div>
     </div>
 
     <div id="appUI">
         <button class="btn-logout" onclick="logout()">LOGOUT</button>
-        <div style="clear:both"></div>
 
         <div class="controls">
             <label style="font-weight: 700; color: var(--accent);">STUDY DATE:</label>
@@ -192,7 +211,7 @@
         <div class="marksheet">
             <div class="header">
                 <h1>JOURNAL LEDGER</h1>
-                <p style="font-size: 0.8rem; color: var(--subtext); font-weight: 600; letter-spacing: 1px;">ASPIRANT TRACKER • CLASS 11</p>
+                <p style="font-size: 0.75rem; color: var(--subtext); font-weight: 600; letter-spacing: 1px;">ASPIRANT TRACKER • CLASS 11</p>
             </div>
 
             <div class="section">
@@ -220,18 +239,18 @@
 
             <div class="section">
                 <span class="label">Daily Topics & Notes</span>
-                <textarea id="streamNotes" class="field-input" rows="6" style="resize: none;" placeholder="Physics: Kinematics (NCERT + DPPS)..."></textarea>
+                <textarea id="streamNotes" class="field-input" rows="5" style="resize: none;" placeholder="Physics: Kinematics (NCERT + DPPS)..."></textarea>
             </div>
 
-            <div class="btn-group" style="display:flex; gap:12px; justify-content: flex-end; margin-top: 20px;">
+            <div class="btn-group">
                 <button id="deleteBtn" onclick="deleteFromCloud()" style="background:var(--low); color:white; display:none;">Delete</button>
                 <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white;">Edit</button>
                 <button id="saveBtn" onclick="saveToCloud()" style="background:var(--save-color); color:white;">Save to Cloud</button>
             </div>
         </div>
 
-        <div class="statement-controls" style="margin-top: 30px;">
-            <strong style="color:var(--accent)">LEDGER RANGE:</strong>
+        <div class="statement-controls">
+            <strong style="color:var(--accent)">RANGE:</strong>
             <input type="date" id="startDate"> 
             <span style="font-weight: 700;">to</span>
             <input type="date" id="endDate">
@@ -239,29 +258,29 @@
         </div>
 
         <div id="statementArea">
-            <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--border); padding-bottom:15px;">
+            <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--border); padding-bottom:15px; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <h2 style="margin:0; color:var(--accent); font-family: var(--font-display); font-weight: 800;">NEET ASPIRANT LEDGER</h2>
-                    <p style="font-size:0.8rem; font-weight: 600;">Student ID: #NEET-2026</p>
+                    <h2 style="margin:0; color:var(--accent); font-family: var(--font-display); font-weight: 800; font-size: 1.2rem;">NEET ASPIRANT LEDGER</h2>
+                    <p style="font-size:0.75rem; font-weight: 600;">Student ID: #NEET-2026</p>
                 </div>
                 <div style="text-align:right;">
-                    <p style="margin:0; font-weight: 800;">REVISION SUMMARY</p>
-                    <p id="rangeText" style="font-size:0.8rem; font-family: var(--font-display); font-weight: 600;"></p>
+                    <p style="margin:0; font-weight: 800; font-size: 0.8rem;">REVISION SUMMARY</p>
+                    <p id="rangeText" style="font-size:0.75rem; font-family: var(--font-display); font-weight: 600;"></p>
                 </div>
             </div>
             <table class="bank-table">
                 <thead><tr><th>DATE</th><th>GOAL</th><th>MASTERY</th><th>TOPICS & NOTES</th></tr></thead>
                 <tbody id="bankBody"></tbody>
             </table>
-            <div style="margin-top:30px; display:flex; justify-content:space-between; align-items:center;">
-                <p style="font-size:0.75rem; color:var(--subtext); font-style: italic; font-weight: 500;">"The hard work of today is the MBBS seat of tomorrow."</p>
-                <button onclick="window.print()" style="background:#fff; color:#000; text-transform: none; font-size: 0.75rem;">Download PDF</button>
+            <div style="margin-top:30px; display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 15px;">
+                <p style="font-size:0.7rem; color:var(--subtext); font-style: italic; font-weight: 500; max-width: 70%;">"The hard work of today is the MBBS seat of tomorrow."</p>
+                <button onclick="window.print()" style="background:#fff; color:#000; text-transform: none; font-size: 0.7rem; padding: 8px 12px;">Download PDF</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ... (Script remains exactly the same as your functional original) ...
+        // Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyCa0bKCKqoWXMfuvg0OGBldGxHGczbQUFM",
           authDomain: "neet-ledger.firebaseapp.com",
@@ -357,7 +376,7 @@
 
         function enableWriting() {
             document.getElementById('streamNotes').removeAttribute('readonly');
-            document.getElementById('streamNotes').classList.add('editable-now');
+            document.getElementById('streamNotes').style.background = "#1c2128";
             document.getElementById('workStatus').disabled = false;
             document.getElementsByName('perfGrade').forEach(r => r.disabled = false);
             document.getElementById('editBtn').style.display = "none";
@@ -367,7 +386,7 @@
 
         function disableWriting() {
             document.getElementById('streamNotes').setAttribute('readonly', true);
-            document.getElementById('streamNotes').classList.remove('editable-now');
+            document.getElementById('streamNotes').style.background = "transparent";
             document.getElementById('workStatus').disabled = true;
             document.getElementsByName('perfGrade').forEach(r => r.disabled = true);
             document.getElementById('editBtn').style.display = "inline-block";
