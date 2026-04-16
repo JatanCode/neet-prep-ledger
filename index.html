@@ -39,7 +39,6 @@
             overflow-x: hidden;
         }
 
-        /* --- Medical Floating Background --- */
         .medical-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1; opacity: 0.1; pointer-events: none;
@@ -62,21 +61,56 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
+        /* --- Auth Page Specific Styles --- */
+        .auth-card {
+            max-width: 400px;
+            text-align: center;
+            margin-top: 60px;
+            padding: 40px 30px;
+        }
+        .auth-header h2 {
+            font-family: var(--font-display);
+            color: var(--accent);
+            letter-spacing: 3px;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+        .auth-input-group { text-align: left; margin-top: 20px; }
+        .auth-input-group label {
+            font-size: 0.65rem;
+            color: var(--accent);
+            font-weight: 800;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
+        .auth-card input {
+            width: 100%; padding: 14px; margin-top: 5px; margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border);
+            border-radius: 12px; color: white; font-family: var(--font-main); outline: none;
+        }
+        .auth-card input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* --- Main UI Styles --- */
+        input[type="date"] {
+            width: 100%; padding: 12px; margin-top: 5px; background: #0d1117; 
+            color: white; border-radius: 10px; border: 1px solid var(--glass-border);
+            color-scheme: dark; font-family: var(--font-main); outline: none;
+        }
+
         #appUI { display: none; width: 100%; max-width: 700px; animation: slideUp 0.5s ease; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- Subject Grid with Strike-through --- */
         .subject-row {
-            display: flex; align-items: center; gap: 12px;
-            background: rgba(0,0,0,0.3);
-            padding: 12px; border-radius: 15px; margin-bottom: 10px;
-            border: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3);
+            padding: 12px; border-radius: 15px; margin-bottom: 10px; border: 1px solid var(--glass-border);
         }
         .subject-name { font-weight: 800; font-size: 0.75rem; width: 85px; text-transform: uppercase; letter-spacing: 1px; }
         .not-studied { text-decoration: line-through; opacity: 0.4; color: var(--danger); }
         .subject-input { flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--glass-border); color: white; padding: 5px; font-size: 0.9rem; outline: none; }
 
-        /* --- Checkbox Toggle Switch --- */
         .switch { position: relative; display: inline-block; width: 44px; height: 22px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #333; border-radius: 34px; }
@@ -84,30 +118,25 @@
         input:checked + .slider { background: var(--success); }
         input:checked + .slider:before { content: "✓"; transform: translateX(22px); background: white; color: var(--success); }
 
-        /* --- Mastery Evaluation Grid --- */
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 10px; }
-        .mastery-card {
-            background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border);
-            display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
-        }
-        .mastery-card input { accent-color: var(--accent); }
+        .mastery-card { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
 
-        /* --- Buttons --- */
         button { cursor: pointer; border: none; border-radius: 12px; font-weight: 800; padding: 14px 20px; font-family: var(--font-main); letter-spacing: 1px; }
         .btn-primary { background: var(--accent); color: #000; box-shadow: 0 4px 15px var(--accent-glow); }
         .btn-save { background: var(--success); color: white; width: 100%; margin-top: 10px; }
         .btn-logout { background: transparent; border: 1px solid var(--danger); color: var(--danger); font-size: 0.7rem; padding: 6px 12px; float: right; }
 
-        /* --- PDF Theme --- */
-        .light-mode-pdf { background: white !important; color: black !important; }
-        .light-mode-pdf .glass-panel { background: #f9f9f9 !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; }
-        .light-mode-pdf td, .light-mode-pdf th { color: black !important; border-color: #ddd !important; }
-
         .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
         .time-box { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 15px; border: 1px solid var(--glass-border); text-align: center; }
         .time-box input { width: 100%; background: transparent; border: none; color: white; font-size: 1.4rem; font-weight: 800; text-align: center; outline: none; border-bottom: 2px solid var(--accent); }
 
-        @media print { .no-print, .icon-float, .btn-logout, .medical-bg, .btn-save { display: none !important; } #statementArea { display: block !important; width: 100%; position: absolute; top:0; } }
+        body.light-mode-pdf { background: #ffffff !important; color: #000000 !important; }
+        body.light-mode-pdf .glass-panel { background: #f9f9f9 !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; backdrop-filter: none !important; }
+        @media print { 
+            .no-print, .icon-float, .btn-logout, .medical-bg, .btn-save, #authScreen, .marksheet { display: none !important; } 
+            #statementArea { display: block !important; width: 100% !important; border: none !important; }
+            body { padding: 0 !important; }
+        }
     </style>
 </head>
 <body>
@@ -116,94 +145,85 @@
     <div class="icon-float" style="top: 15%; left: 5%; font-size: 40px;">⚕️</div>
     <div class="icon-float" style="top: 55%; right: 5%; font-size: 30px; animation-delay: 2s;">🩺</div>
 
-    <div id="authScreen" class="glass-panel" style="max-width: 400px; text-align: center; margin-top: 60px;">
-        <div style="font-size: 3.5rem;">🩺</div>
-        <h2 style="color: var(--accent); letter-spacing: 2px;">NEET ACCESS</h2>
-        <input type="email" id="email" placeholder="Email ID" style="width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; background: #000; color: white; border: 1px solid var(--glass-border);">
-        <input type="password" id="password" placeholder="Passcode" style="width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; background: #000; color: white; border: 1px solid var(--glass-border);">
-        <button class="btn-primary" onclick="handleAuth('login')" style="width: 100%; margin-top: 15px;">LOGIN</button>
-        <p onclick="handleAuth('signup')" style="font-size: 0.7rem; color: var(--subtext); cursor: pointer; margin-top: 20px;">Register New Profile</p>
+    <div id="authScreen" class="glass-panel auth-card">
+        <div class="auth-header">
+            <div style="font-size: 3.5rem; filter: drop-shadow(0 0 10px var(--accent-glow));">🩺</div>
+            <h2>NEET ACCESS</h2>
+            <p style="font-size: 0.7rem; color: var(--subtext); letter-spacing: 1px;">CLINICAL LEDGER TERMINAL</p>
+        </div>
+        
+        <div class="auth-input-group">
+            <label>Medical Identifier</label>
+            <input type="email" id="email" placeholder="email@academy.com">
+            
+            <label>Security Passcode</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <button class="btn-primary" onclick="handleAuth('login')" style="width: 100%; margin-top: 10px;">ENTER TERMINAL</button>
+        <p onclick="handleAuth('signup')" style="font-size: 0.7rem; color: var(--subtext); cursor: pointer; margin-top: 20px; text-decoration: underline;">Initialize New Profile</p>
     </div>
 
     <div id="appUI">
-        <button class="btn-logout" onclick="logout()">LOGOUT</button>
+        <button class="btn-logout no-print" onclick="logout()">LOGOUT</button>
         <div style="clear: both;"></div>
 
-        <div class="glass-panel">
-            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">STUDY DATE</label>
-            <input type="date" id="currentDate" onchange="loadFromCloud()" style="width: 100%; padding: 12px; margin-top: 5px; background: black; color: white; border-radius: 10px; border: 1px solid var(--glass-border);">
+        <div class="glass-panel no-print">
+            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">DATE SELECTOR :</label>
+            <input type="date" id="currentDate" onchange="loadFromCloud()">
         </div>
 
-        <div class="glass-panel marksheet">
-            <h3 style="text-align: center; margin-top: 0; letter-spacing: 2px; color: var(--accent);">CASE STUDY LOG</h3>
-
-            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">DURATION CLOCK</label>
+        <div class="glass-panel marksheet no-print">
+            <h3 style="text-align: center; margin-top: 0; letter-spacing: 2px; color: var(--accent);">DAILY LEDGER : NEET 2026 (11th)</h3>
             <div class="time-grid">
-                <div class="time-box"><input type="number" id="studyHr" placeholder="00"><label style="font-size:0.6rem; color:var(--subtext);">HRS</label></div>
-                <div class="time-box"><input type="number" id="studyMin" placeholder="00"><label style="font-size:0.6rem; color:var(--subtext);">MINS</label></div>
-                <div class="time-box"><input type="number" id="studySec" placeholder="00"><label style="font-size:0.6rem; color:var(--subtext);">SECS</label></div>
+                <div class="time-box"><input type="number" id="studyHr" placeholder="00"><label>HRS</label></div>
+                <div class="time-box"><input type="number" id="studyMin" placeholder="00"><label>MINS</label></div>
+                <div class="time-box"><input type="number" id="studySec" placeholder="00"><label>SECS</label></div>
             </div>
-
             <div style="margin: 20px 0; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; border: 1px solid var(--glass-border);">
-                <input type="checkbox" id="dailyGoal" style="width: 20px; height: 20px; accent-color: var(--success); cursor: pointer;">
+                <input type="checkbox" id="dailyGoal">
                 <label style="font-weight: 700; font-size: 0.9rem;">Daily Syllabus Target Completed</label>
             </div>
-
-            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">SUBJECT ANALYSIS</label>
-            <div id="subjectSection" style="margin-top: 10px;">
-                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkBotany" onchange="updateStrike('Botany')"><span class="slider"></span></label>
-                <span id="labelBotany" class="subject-name not-studied">Botany</span><input type="text" id="taskBotany" class="subject-input" placeholder="Topic details..."></div>
-                
-                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkZoology" onchange="updateStrike('Zoology')"><span class="slider"></span></label>
-                <span id="labelZoology" class="subject-name not-studied">Zoology</span><input type="text" id="taskZoology" class="subject-input" placeholder="Topic details..."></div>
-                
-                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkPhysics" onchange="updateStrike('Physics')"><span class="slider"></span></label>
-                <span id="labelPhysics" class="subject-name not-studied">Physics</span><input type="text" id="taskPhysics" class="subject-input" placeholder="Topic details..."></div>
-                
-                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkChemistry" onchange="updateStrike('Chemistry')"><span class="slider"></span></label>
-                <span id="labelChemistry" class="subject-name not-studied">Chemistry</span><input type="text" id="taskChemistry" class="subject-input" placeholder="Topic details..."></div>
+            <div id="subjectSection">
+                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkBotany" onchange="updateStrike('Botany')"><span class="slider"></span></label><span id="labelBotany" class="subject-name not-studied">Botany</span><input type="text" id="taskBotany" class="subject-input" placeholder="Topic details..."></div>
+                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkZoology" onchange="updateStrike('Zoology')"><span class="slider"></span></label><span id="labelZoology" class="subject-name not-studied">Zoology</span><input type="text" id="taskZoology" class="subject-input" placeholder="Topic details..."></div>
+                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkPhysics" onchange="updateStrike('Physics')"><span class="slider"></span></label><span id="labelPhysics" class="subject-name not-studied">Physics</span><input type="text" id="taskPhysics" class="subject-input" placeholder="Topic details..."></div>
+                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkChemistry" onchange="updateStrike('Chemistry')"><span class="slider"></span></label><span id="labelChemistry" class="subject-name not-studied">Chemistry</span><input type="text" id="taskChemistry" class="subject-input" placeholder="Topic details..."></div>
             </div>
-
-            <div style="margin-top: 25px;">
-                <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">MASTERY EVALUATION</label>
-                <div class="mastery-grid">
-                    <label class="mastery-card"><input type="radio" name="perfGrade" value="Expert"> 🧠 Expert</label>
-                    <label class="mastery-card"><input type="radio" name="perfGrade" value="Good"> 📖 Good</label>
-                    <label class="mastery-card"><input type="radio" name="perfGrade" value="Weak"> ⚠️ Weak</label>
-                    <label class="mastery-card"><input type="radio" name="perfGrade" value="None"> ❌ None</label>
-                </div>
+            <div class="mastery-grid">
+                <label class="mastery-card"><input type="radio" name="perfGrade" value="Expert"> 🧠 High Mastery</label>
+                <label class="mastery-card"><input type="radio" name="perfGrade" value="Good"> 📖 Normal Progress</label>
+                <label class="mastery-card"><input type="radio" name="perfGrade" value="Weak"> ⚠️ Low Retention</label>
+                <label class="mastery-card"><input type="radio" name="perfGrade" value="None"> ❌ No</label>
             </div>
-
-            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent); margin-top: 25px; display: block;">CASE NOTES & DOUBTS</label>
-            <textarea id="streamNotes" placeholder="Additional observations..." style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:white; border-radius:15px; padding:15px; margin-top:10px; outline:none; min-height:80px;"></textarea>
-
+            <textarea id="streamNotes" placeholder="Additional observations..." style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:white; border-radius:15px; padding:15px; margin-top:10px; font-family: var(--font-main);"></textarea>
             <div style="display:flex; gap:10px; margin-top: 20px;">
-                <button id="saveBtn" class="btn-save" onclick="saveToCloud()">💾 SAVE CASE LOG</button>
+                <button id="saveBtn" class="btn-save" onclick="saveToCloud()">💾 SAVE DATA </button>
                 <button id="editBtn" class="btn-primary" style="display:none; flex:1;" onclick="enableWriting()">✏️ MODIFY</button>
                 <button id="deleteBtn" style="background:var(--danger); color:white; display:none;" onclick="deleteFromCloud()">🗑️</button>
             </div>
         </div>
 
         <div class="glass-panel no-print">
-            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">REPORTING RANGE</label>
+            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">DATE RANGE</label>
             <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
-                <input type="date" id="startRange" style="flex: 1; padding: 10px; background: #000; border: 1px solid var(--glass-border); color: white; border-radius: 8px;">
-                <input type="date" id="endRange" style="flex: 1; padding: 10px; background: #000; border: 1px solid var(--glass-border); color: white; border-radius: 8px;">
+                <input type="date" id="startRange" style="flex: 1;">
+                <input type="date" id="endRange" style="flex: 1;">
                 <button class="btn-primary" onclick="generateReport()">GENERATE</button>
             </div>
             <div style="margin-top: 15px;">
                 <span style="font-size: 0.75rem; font-weight: 800;">PDF THEME:</span>
                 <select id="pdfTheme" style="background: #000; color: white; border: 1px solid var(--glass-border); padding: 5px; border-radius: 5px;">
-                    <option value="dark">Onyx Dark</option>
-                    <option value="light">Clinical Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
                 </select>
             </div>
         </div>
 
         <div id="statementArea" class="glass-panel" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px;">
-                <h3 style="margin: 0; letter-spacing: 1px;">ACADEMIC CASE HISTORY</h3>
-                <button class="btn-primary" onclick="printPDF()" style="padding: 5px 12px; font-size: 0.7rem;">🖨️ EXPORT PDF</button>
+                <h3 style="margin: 0; color: var(--accent);">ACADEMIC CASE HISTORY</h3>
+                <button class="btn-primary no-print" onclick="printPDF()">🖨️ EXPORT PDF</button>
             </div>
             <div style="overflow-x: auto; margin-top: 15px;">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -211,7 +231,7 @@
                         <tr style="color: var(--accent); font-size: 0.75rem; text-align: left;">
                             <th style="padding: 10px; border-bottom: 1px solid var(--glass-border);">DATE</th>
                             <th style="padding: 10px; border-bottom: 1px solid var(--glass-border);">CLOCK</th>
-                            <th style="padding: 10px; border-bottom: 1px solid var(--glass-border);">SYLLABUS STATUS</th>
+                            <th style="padding: 10px; border-bottom: 1px solid var(--glass-border);">STATUS</th>
                             <th style="padding: 10px; border-bottom: 1px solid var(--glass-border);">MASTERY</th>
                         </tr>
                     </thead>
@@ -238,6 +258,7 @@
         function handleAuth(type) {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
+            if(!email || !pass) return alert("Credentials Required");
             if (type === 'signup') auth.createUserWithEmailAndPassword(email, pass).catch(e => alert(e.message));
             else auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
         }
@@ -286,6 +307,7 @@
 
         async function loadFromCloud() {
             const date = document.getElementById('currentDate').value;
+            if(!date) return;
             const doc = await db.collection("global_logs").doc(date).get();
             if (doc.exists) {
                 const d = doc.data();
@@ -305,10 +327,7 @@
                 document.getElementById('saveBtn').style.display = "none";
                 document.getElementById('editBtn').style.display = "inline-block";
                 document.getElementById('deleteBtn').style.display = "inline-block";
-            } else {
-                resetForm();
-                enableWriting();
-            }
+            } else { resetForm(); enableWriting(); }
         }
 
         function resetForm() {
@@ -327,6 +346,7 @@
         async function generateReport() {
             const s = document.getElementById('startRange').value;
             const e = document.getElementById('endRange').value;
+            if(!s || !e) return alert("Select Range");
             const body = document.getElementById('bankBody');
             body.innerHTML = "<tr><td colspan='4'>Analyzing...</td></tr>";
             const snap = await db.collection("global_logs").where(firebase.firestore.FieldPath.documentId(), ">=", s).where(firebase.firestore.FieldPath.documentId(), "<=", e).get();
@@ -341,8 +361,11 @@
 
         function printPDF() {
             const theme = document.getElementById('pdfTheme').value;
-            if(theme === 'light') document.body.classList.add('light-mode-pdf');
-            else document.body.classList.remove('light-mode-pdf');
+            if(theme === 'light') {
+                document.body.classList.add('light-mode-pdf');
+            } else {
+                document.body.classList.remove('light-mode-pdf');
+            }
             window.print();
         }
 
