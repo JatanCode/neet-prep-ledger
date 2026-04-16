@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEET Prep Ledger | Cloud Sync</title>
+    <title>NEET Prep Ledger | Clinical Glass Final</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,272 +15,213 @@
 
     <style>
         :root {
-            --bg: #0b0f19;
-            --card: #161b22;
+            --bg: #030508;
+            --glass-bg: rgba(13, 17, 23, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --accent: #58a6ff;
-            --text: #c9d1d9;
+            --accent-glow: rgba(88, 166, 255, 0.4);
+            --success: #2ea043;
+            --danger: #f85149;
+            --text: #e6edf3;
             --subtext: #8b949e;
-            --border: #30363d;
-            --save-color: #238636;
-            --edit-color: #9e6a03;
-            --high: #3fb950;
-            --norm: #d29922;
-            --low: #f85149;
             --font-main: 'Plus Jakarta Sans', sans-serif;
             --font-display: 'Outfit', sans-serif;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; transition: all 0.2s ease-in-out; }
 
         body { 
             font-family: var(--font-main); 
-            background-color: var(--bg); 
-            color: var(--text); 
-            padding: 15px; 
-            margin: 0;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
+            background: radial-gradient(circle at center, #0d1117 0%, #030508 100%);
+            background-attachment: fixed;
+            color: var(--text); padding: 10px; margin: 0;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* --- Auth Screen --- */
-        #authScreen { 
-            background: var(--card); 
-            padding: 40px 25px; 
-            border-radius: 20px; 
-            border: 1px solid var(--border); 
-            width: 100%; 
-            max-width: 400px; 
-            text-align: center; 
-            margin-top: 50px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        /* --- Medical Floating Background --- */
+        .medical-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; opacity: 0.1; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 100 100'%3E%3Cpath d='M40 10h20v20h-20z' fill='%2358a6ff'/%3E%3C/svg%3E");
         }
 
-        .auth-input { 
-            font-family: var(--font-main);
-            width: 100%; 
-            padding: 14px; 
-            margin: 10px 0; 
-            background: #0d1117; 
-            border: 1px solid var(--border); 
-            color: white; 
-            border-radius: 10px; 
-            font-size: 0.95rem;
+        .icon-float {
+            position: fixed; color: var(--accent); opacity: 0.15; z-index: -1;
+            animation: float 12s infinite ease-in-out;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-30px) rotate(10deg); } }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            width: 100%; max-width: 700px;
+            margin-bottom: 20px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* --- App UI Container --- */
-        #appUI { display: none; width: 100%; max-width: 700px; }
+        #appUI { display: none; width: 100%; max-width: 700px; animation: slideUp 0.5s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .btn-logout { 
-            background: transparent; color: var(--low); border: 1px solid var(--low); 
-            padding: 8px 16px; font-size: 0.7rem; border-radius: 6px;
-            margin-bottom: 15px; cursor: pointer; float: right;
+        /* --- Subject Grid with Strike-through --- */
+        .subject-row {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(0,0,0,0.3);
+            padding: 12px; border-radius: 15px; margin-bottom: 10px;
+            border: 1px solid var(--glass-border);
         }
+        .subject-name { font-weight: 800; font-size: 0.75rem; width: 85px; text-transform: uppercase; letter-spacing: 1px; }
+        .not-studied { text-decoration: line-through; opacity: 0.4; color: var(--danger); }
+        .subject-input { flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--glass-border); color: white; padding: 5px; font-size: 0.9rem; outline: none; }
 
-        /* --- Responsive Controls --- */
-        .controls, .statement-controls {
-            margin-bottom: 20px; background: var(--card); padding: 18px; 
-            border: 1px solid var(--border); border-radius: 12px; display: flex; 
-            flex-wrap: wrap; gap: 12px; align-items: center; font-size: 0.9rem;
-            clear: both;
+        /* --- Checkbox Toggle Switch --- */
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #333; border-radius: 34px; }
+        .slider:before { position: absolute; content: "✕"; font-size: 9px; color: white; text-align: center; line-height: 16px; height: 16px; width: 16px; left: 3px; bottom: 3px; background: var(--danger); border-radius: 50%; transition: 0.3s; }
+        input:checked + .slider { background: var(--success); }
+        input:checked + .slider:before { content: "✓"; transform: translateX(22px); background: white; color: var(--success); }
+
+        /* --- Mastery Evaluation Grid --- */
+        .mastery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 10px; }
+        .mastery-card {
+            background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
         }
+        .mastery-card input { accent-color: var(--accent); }
 
-        input[type="date"] {
-            font-family: var(--font-display);
-            background: #0d1117; color: white; border: 1px solid var(--border); 
-            padding: 10px; border-radius: 8px; color-scheme: dark; outline: none;
-            flex-grow: 1;
-        }
+        /* --- Buttons --- */
+        button { cursor: pointer; border: none; border-radius: 12px; font-weight: 800; padding: 14px 20px; font-family: var(--font-main); letter-spacing: 1px; }
+        .btn-primary { background: var(--accent); color: #000; box-shadow: 0 4px 15px var(--accent-glow); }
+        .btn-save { background: var(--success); color: white; width: 100%; margin-top: 10px; }
+        .btn-logout { background: transparent; border: 1px solid var(--danger); color: var(--danger); font-size: 0.7rem; padding: 6px 12px; float: right; }
 
-        /* --- Marksheet Design --- */
-        .marksheet { 
-            background: var(--card); padding: 30px 20px; border: 1px solid var(--border); 
-            border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-        }
+        /* --- PDF Theme --- */
+        .light-mode-pdf { background: white !important; color: black !important; }
+        .light-mode-pdf .glass-panel { background: #f9f9f9 !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; }
+        .light-mode-pdf td, .light-mode-pdf th { color: black !important; border-color: #ddd !important; }
 
-        @media (min-width: 600px) { .marksheet { padding: 45px; } }
+        .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .time-box { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 15px; border: 1px solid var(--glass-border); text-align: center; }
+        .time-box input { width: 100%; background: transparent; border: none; color: white; font-size: 1.4rem; font-weight: 800; text-align: center; outline: none; border-bottom: 2px solid var(--accent); }
 
-        .header { text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 30px; padding-bottom: 15px; }
-        .header h1 { 
-            font-family: var(--font-display);
-            color: var(--accent); margin: 0; font-size: 1.4rem; 
-            font-weight: 800; text-transform: uppercase; letter-spacing: 2px; 
-        }
-
-        .section { margin-bottom: 25px; }
-        .label { 
-            font-weight: 700; color: var(--subtext); font-size: 0.7rem; 
-            display: block; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;
-        }
-
-        /* Responsive Grid for Radio Buttons */
-        .grade-container { 
-            display: grid; 
-            grid-template-columns: 1fr; 
-            gap: 10px; 
-            background: #0d1117; 
-            padding: 15px; 
-            border-radius: 12px; 
-            border: 1px solid var(--border); 
-        }
-
-        @media (min-width: 480px) { .grade-container { grid-template-columns: 1fr 1fr; } }
-
-        .grade-option { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px; border-radius: 8px; transition: 0.2s; }
-        .grade-option:hover { background: #21262d; }
-
-        .grade-option input[type="radio"] {
-            appearance: none; -webkit-appearance: none; width: 20px; height: 20px;
-            border: 2px solid var(--border); border-radius: 50%; background: transparent;
-            cursor: pointer; position: relative; flex-shrink: 0;
-        }
-
-        .grade-option input[type="radio"]:checked::before {
-            content: ""; width: 10px; height: 10px; border-radius: 50%;
-            background-color: var(--accent); position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .field-input { 
-            font-family: var(--font-main); width: 100%; border: none; 
-            border-bottom: 1px solid var(--border); font-size: 1rem; 
-            padding: 12px 0; background: transparent; color: var(--text); 
-            outline: none;
-        }
-
-        textarea.field-input {
-            border: 1px solid var(--border); padding: 12px; border-radius: 10px;
-            margin-top: 5px;
-        }
-
-        /* Responsive Button Group */
-        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        
-        @media (min-width: 480px) { 
-            .btn-group { flex-direction: row; justify-content: flex-end; }
-        }
-
-        button { 
-            font-family: var(--font-main); padding: 12px 24px; border: none; 
-            border-radius: 10px; cursor: pointer; font-weight: 700; 
-            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        /* --- Statement Area --- */
-        #statementArea { 
-            display: none; width: 100%; background: #0d1117; 
-            padding: 25px 15px; border: 1px solid var(--border); margin-top: 30px; 
-            border-radius: 16px; overflow-x: auto;
-        }
-
-        .bank-table { width: 100%; border-collapse: collapse; min-width: 600px; margin-top: 20px; }
-        .bank-table th { background: #161b22; color: var(--accent); padding: 12px; border: 1px solid var(--border); text-align: left; }
-        .bank-table td { border: 1px solid var(--border); padding: 12px; font-size: 0.85rem; }
-
-        @media print {
-            body { background: white !important; color: black !important; padding: 0; }
-            #statementArea { display: block !important; border: none; background: white; width: 100%; }
-            .bank-table th, .bank-table td { border: 1px solid #000 !important; color: #000 !important; }
-            button, .controls, .marksheet, .btn-logout, .statement-controls { display: none !important; }
-        }
+        @media print { .no-print, .icon-float, .btn-logout, .medical-bg, .btn-save { display: none !important; } #statementArea { display: block !important; width: 100%; position: absolute; top:0; } }
     </style>
 </head>
 <body>
 
-    <div id="authScreen">
-        <h2 style="font-family: var(--font-display); font-weight: 800; color:var(--accent); margin: 0;">NEET ACCESS</h2>
-        <p style="font-size: 0.85rem; color: var(--subtext); margin-bottom: 25px;">Cloud Sync Academic Ledger</p>
-        <input type="email" id="email" class="auth-input" placeholder="Email Address">
-        <input type="password" id="password" class="auth-input" placeholder="Password">
-        <div style="margin-top: 15px;">
-            <button onclick="handleAuth('login')" style="background:var(--accent); color:black; width: 100%; margin-bottom: 10px;">LOGIN</button>
-            <button onclick="handleAuth('signup')" style="background:transparent; color:var(--text); border:1px solid var(--border); width: 100%;">CREATE ACCOUNT</button>
-        </div>
+    <div class="medical-bg"></div>
+    <div class="icon-float" style="top: 15%; left: 5%; font-size: 40px;">⚕️</div>
+    <div class="icon-float" style="top: 55%; right: 5%; font-size: 30px; animation-delay: 2s;">🩺</div>
+
+    <div id="authScreen" class="glass-panel" style="max-width: 400px; text-align: center; margin-top: 60px;">
+        <div style="font-size: 3.5rem;">🩺</div>
+        <h2 style="color: var(--accent); letter-spacing: 2px;">NEET ACCESS</h2>
+        <input type="email" id="email" placeholder="Email ID" style="width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; background: #000; color: white; border: 1px solid var(--glass-border);">
+        <input type="password" id="password" placeholder="Passcode" style="width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; background: #000; color: white; border: 1px solid var(--glass-border);">
+        <button class="btn-primary" onclick="handleAuth('login')" style="width: 100%; margin-top: 15px;">LOGIN</button>
+        <p onclick="handleAuth('signup')" style="font-size: 0.7rem; color: var(--subtext); cursor: pointer; margin-top: 20px;">Register New Profile</p>
     </div>
 
     <div id="appUI">
         <button class="btn-logout" onclick="logout()">LOGOUT</button>
+        <div style="clear: both;"></div>
 
-        <div class="controls">
-            <label style="font-weight: 700; color: var(--accent);">STUDY DATE:</label>
-            <input type="date" id="currentDate" onchange="loadFromCloud()">
+        <div class="glass-panel">
+            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">STUDY DATE</label>
+            <input type="date" id="currentDate" onchange="loadFromCloud()" style="width: 100%; padding: 12px; margin-top: 5px; background: black; color: white; border-radius: 10px; border: 1px solid var(--glass-border);">
         </div>
 
-        <div class="marksheet">
-            <div class="header">
-                <h1>JOURNAL LEDGER</h1>
-                <p style="font-size: 0.75rem; color: var(--subtext); font-weight: 600; letter-spacing: 1px;">ASPIRANT TRACKER • CLASS 11</p>
+        <div class="glass-panel marksheet">
+            <h3 style="text-align: center; margin-top: 0; letter-spacing: 2px; color: var(--accent);">CASE STUDY LOG</h3>
+
+            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">DURATION CLOCK</label>
+            <div class="time-grid">
+                <div class="time-box"><input type="number" id="studyHr" placeholder="00"><label style="font-size:0.6rem; color:var(--subtext);">HRS</label></div>
+                <div class="time-box"><input type="number" id="studyMin" placeholder="00"><label style="font-size:0.6rem; color:var(--subtext);">MINS</label></div>
+                <div class="time-box"><input type="number" id="studySec" placeholder="00"><label style="font-size:0.6rem; color:var(--subtext);">SECS</label></div>
             </div>
 
-            <div class="section">
-                <span class="label">Date of Entry</span>
-                <input type="text" id="displayDate" class="field-input" readonly>
+            <div style="margin: 20px 0; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; border: 1px solid var(--glass-border);">
+                <input type="checkbox" id="dailyGoal" style="width: 20px; height: 20px; accent-color: var(--success); cursor: pointer;">
+                <label style="font-weight: 700; font-size: 0.9rem;">Daily Syllabus Target Completed</label>
             </div>
 
-            <div class="section">
-                <span class="label">Work Goal Status</span>
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <input type="checkbox" id="workStatus" style="width:22px; height:22px; accent-color:var(--save-color); cursor: pointer;"> 
-                    <span style="font-weight:700; font-size: 1rem;">All Topics Completed</span>
+            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">SUBJECT ANALYSIS</label>
+            <div id="subjectSection" style="margin-top: 10px;">
+                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkBotany" onchange="updateStrike('Botany')"><span class="slider"></span></label>
+                <span id="labelBotany" class="subject-name not-studied">Botany</span><input type="text" id="taskBotany" class="subject-input" placeholder="Topic details..."></div>
+                
+                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkZoology" onchange="updateStrike('Zoology')"><span class="slider"></span></label>
+                <span id="labelZoology" class="subject-name not-studied">Zoology</span><input type="text" id="taskZoology" class="subject-input" placeholder="Topic details..."></div>
+                
+                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkPhysics" onchange="updateStrike('Physics')"><span class="slider"></span></label>
+                <span id="labelPhysics" class="subject-name not-studied">Physics</span><input type="text" id="taskPhysics" class="subject-input" placeholder="Topic details..."></div>
+                
+                <div class="subject-row"><label class="switch"><input type="checkbox" id="checkChemistry" onchange="updateStrike('Chemistry')"><span class="slider"></span></label>
+                <span id="labelChemistry" class="subject-name not-studied">Chemistry</span><input type="text" id="taskChemistry" class="subject-input" placeholder="Topic details..."></div>
+            </div>
+
+            <div style="margin-top: 25px;">
+                <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">MASTERY EVALUATION</label>
+                <div class="mastery-grid">
+                    <label class="mastery-card"><input type="radio" name="perfGrade" value="Expert"> 🧠 Expert</label>
+                    <label class="mastery-card"><input type="radio" name="perfGrade" value="Good"> 📖 Good</label>
+                    <label class="mastery-card"><input type="radio" name="perfGrade" value="Weak"> ⚠️ Weak</label>
+                    <label class="mastery-card"><input type="radio" name="perfGrade" value="None"> ❌ None</label>
                 </div>
             </div>
 
-            <div class="section">
-                <span class="label">Syllabus Mastery Level</span>
-                <div class="grade-container">
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="Expert"><span class="grade-label" style="color:var(--high)">🧠 High Mastery</span></label>
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="Good"><span class="grade-label" style="color:var(--norm)">📖 Normal Progress</span></label>
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="Weak"><span class="grade-label" style="color:var(--low)">⚠️ Low Retention</span></label>
-                    <label class="grade-option"><input type="radio" name="perfGrade" value="No Progress"><span class="grade-label">❌ No Study</span></label>
-                </div>
-            </div>
+            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent); margin-top: 25px; display: block;">CASE NOTES & DOUBTS</label>
+            <textarea id="streamNotes" placeholder="Additional observations..." style="width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:white; border-radius:15px; padding:15px; margin-top:10px; outline:none; min-height:80px;"></textarea>
 
-            <div class="section">
-                <span class="label">Daily Topics & Notes</span>
-                <textarea id="streamNotes" class="field-input" rows="5" style="resize: none;" placeholder="Physics: Kinematics (NCERT + DPPS)..."></textarea>
-            </div>
-
-            <div class="btn-group">
-                <button id="deleteBtn" onclick="deleteFromCloud()" style="background:var(--low); color:white; display:none;">Delete</button>
-                <button id="editBtn" onclick="enableWriting()" style="background:var(--edit-color); color:white;">Edit</button>
-                <button id="saveBtn" onclick="saveToCloud()" style="background:var(--save-color); color:white;">Save to Cloud</button>
+            <div style="display:flex; gap:10px; margin-top: 20px;">
+                <button id="saveBtn" class="btn-save" onclick="saveToCloud()">💾 SAVE CASE LOG</button>
+                <button id="editBtn" class="btn-primary" style="display:none; flex:1;" onclick="enableWriting()">✏️ MODIFY</button>
+                <button id="deleteBtn" style="background:var(--danger); color:white; display:none;" onclick="deleteFromCloud()">🗑️</button>
             </div>
         </div>
 
-        <div class="statement-controls">
-            <strong style="color:var(--accent)">RANGE:</strong>
-            <input type="date" id="startDate"> 
-            <span style="font-weight: 700;">to</span>
-            <input type="date" id="endDate">
-            <button onclick="generateStatement()" style="background:var(--accent); color:black; padding: 10px 15px;">Generate</button>
+        <div class="glass-panel no-print">
+            <label style="font-weight: 800; font-size: 0.7rem; color: var(--accent);">REPORTING RANGE</label>
+            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                <input type="date" id="startRange" style="flex: 1; padding: 10px; background: #000; border: 1px solid var(--glass-border); color: white; border-radius: 8px;">
+                <input type="date" id="endRange" style="flex: 1; padding: 10px; background: #000; border: 1px solid var(--glass-border); color: white; border-radius: 8px;">
+                <button class="btn-primary" onclick="generateReport()">GENERATE</button>
+            </div>
+            <div style="margin-top: 15px;">
+                <span style="font-size: 0.75rem; font-weight: 800;">PDF THEME:</span>
+                <select id="pdfTheme" style="background: #000; color: white; border: 1px solid var(--glass-border); padding: 5px; border-radius: 5px;">
+                    <option value="dark">Onyx Dark</option>
+                    <option value="light">Clinical Light</option>
+                </select>
+            </div>
         </div>
 
-        <div id="statementArea">
-            <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--border); padding-bottom:15px; flex-wrap: wrap; gap: 10px;">
-                <div>
-                    <h2 style="margin:0; color:var(--accent); font-family: var(--font-display); font-weight: 800; font-size: 1.2rem;">NEET ASPIRANT LEDGER</h2>
-                    <p style="font-size:0.75rem; font-weight: 600;">Student ID: #NEET-2026</p>
-                </div>
-                <div style="text-align:right;">
-                    <p style="margin:0; font-weight: 800; font-size: 0.8rem;">REVISION SUMMARY</p>
-                    <p id="rangeText" style="font-size:0.75rem; font-family: var(--font-display); font-weight: 600;"></p>
-                </div>
+        <div id="statementArea" class="glass-panel" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px;">
+                <h3 style="margin: 0; letter-spacing: 1px;">ACADEMIC CASE HISTORY</h3>
+                <button class="btn-primary" onclick="printPDF()" style="padding: 5px 12px; font-size: 0.7rem;">🖨️ EXPORT PDF</button>
             </div>
-            <table class="bank-table">
-                <thead><tr><th>DATE</th><th>GOAL</th><th>MASTERY</th><th>TOPICS & NOTES</th></tr></thead>
-                <tbody id="bankBody"></tbody>
-            </table>
-            <div style="margin-top:30px; display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 15px;">
-                <p style="font-size:0.7rem; color:var(--subtext); font-style: italic; font-weight: 500; max-width: 70%;">"The hard work of today is the MBBS seat of tomorrow."</p>
-                <button onclick="window.print()" style="background:#fff; color:#000; text-transform: none; font-size: 0.7rem; padding: 8px 12px;">Download PDF</button>
+            <div style="overflow-x: auto; margin-top: 15px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="color: var(--accent); font-size: 0.75rem; text-align: left;">
+                            <th style="padding: 10px; border-bottom: 1px solid var(--glass-border);">DATE</th>
+                            <th style="padding: 10px; border-bottom: 1px solid var(--glass-border);">CLOCK</th>
+                            <th style="padding: 10px; border-bottom: 1px solid var(--glass-border);">SYLLABUS STATUS</th>
+                            <th style="padding: 10px; border-bottom: 1px solid var(--glass-border);">MASTERY</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bankBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyCa0bKCKqoWXMfuvg0OGBldGxHGczbQUFM",
           authDomain: "neet-ledger.firebaseapp.com",
@@ -290,7 +231,6 @@
           appId: "1:350923661650:web:0a3f8ab66b726419b55a8b",
           measurementId: "G-NBHRPJZMSW"
         };
-        
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -298,11 +238,8 @@
         function handleAuth(type) {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
-            if (type === 'signup') {
-                auth.createUserWithEmailAndPassword(email, pass).catch(e => alert(e.message));
-            } else {
-                auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
-            }
+            if (type === 'signup') auth.createUserWithEmailAndPassword(email, pass).catch(e => alert(e.message));
+            else auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
         }
 
         auth.onAuthStateChanged(user => {
@@ -319,103 +256,97 @@
 
         function logout() { auth.signOut(); }
 
+        function updateStrike(sub) {
+            const check = document.getElementById('check' + sub).checked;
+            const label = document.getElementById('label' + sub);
+            if(check) label.classList.remove('not-studied');
+            else label.classList.add('not-studied');
+        }
+
         async function saveToCloud() {
             const date = document.getElementById('currentDate').value;
-            const perfValue = document.querySelector('input[name="perfGrade"]:checked')?.value || "N/A";
-            
-            try {
-                await db.collection("global_logs").doc(date).set({
-                    completed: document.getElementById('workStatus').checked,
-                    performance: perfValue,
-                    notes: document.getElementById('streamNotes').value,
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("Data Saved!");
-                disableWriting();
-            } catch (error) { alert("Error saving: " + error.message); }
+            if(!date) return alert("Select Date");
+            const perf = document.querySelector('input[name="perfGrade"]:checked')?.value || "None";
+            const data = {
+                time: { hr: document.getElementById('studyHr').value, min: document.getElementById('studyMin').value, sec: document.getElementById('studySec').value },
+                dailyGoal: document.getElementById('dailyGoal').checked,
+                performance: perf,
+                notes: document.getElementById('streamNotes').value,
+                subjects: {
+                    botany: { done: document.getElementById('checkBotany').checked, topic: document.getElementById('taskBotany').value },
+                    zoology: { done: document.getElementById('checkZoology').checked, topic: document.getElementById('taskZoology').value },
+                    physics: { done: document.getElementById('checkPhysics').checked, topic: document.getElementById('taskPhysics').value },
+                    chemistry: { done: document.getElementById('checkChemistry').checked, topic: document.getElementById('taskChemistry').value }
+                }
+            };
+            await db.collection("global_logs").doc(date).set(data);
+            alert("Case Saved!");
+            disableWriting();
         }
 
         async function loadFromCloud() {
-            const selectedDate = document.getElementById('currentDate').value;
-            if(!selectedDate) return;
-            const dateParts = selectedDate.split('-');
-            const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-            document.getElementById('displayDate').value = formattedDate;
-            
-            try {
-                const doc = await db.collection("global_logs").doc(selectedDate).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    document.getElementById('workStatus').checked = data.completed;
-                    document.getElementById('streamNotes').value = data.notes;
-                    const radios = document.getElementsByName('perfGrade');
-                    radios.forEach(r => r.checked = (r.value === data.performance));
-                    document.getElementById('deleteBtn').style.display = "inline-block"; 
-                    disableWriting();
-                } else {
-                    document.getElementById('workStatus').checked = false;
-                    document.getElementById('streamNotes').value = "";
-                    document.getElementsByName('perfGrade').forEach(r => r.checked = false);
-                    document.getElementById('deleteBtn').style.display = "none";
-                    enableWriting();
-                    document.getElementById('editBtn').style.display = "none";
-                }
-            } catch (error) { console.log("Load error:", error); }
-        }
-
-        async function deleteFromCloud() {
             const date = document.getElementById('currentDate').value;
-            if (confirm("Delete data for this date?")) {
-                try {
-                    await db.collection("global_logs").doc(date).delete();
-                    alert("Deleted!");
-                    loadFromCloud();
-                } catch (error) { alert("Delete error: " + error.message); }
+            const doc = await db.collection("global_logs").doc(date).get();
+            if (doc.exists) {
+                const d = doc.data();
+                document.getElementById('studyHr').value = d.time.hr;
+                document.getElementById('studyMin').value = d.time.min;
+                document.getElementById('studySec').value = d.time.sec;
+                document.getElementById('dailyGoal').checked = d.dailyGoal;
+                document.getElementById('streamNotes').value = d.notes;
+                document.getElementsByName('perfGrade').forEach(r => r.checked = (r.value === d.performance));
+                ['Botany', 'Zoology', 'Physics', 'Chemistry'].forEach(s => {
+                    const sub = d.subjects[s.toLowerCase()];
+                    document.getElementById('check'+s).checked = sub.done;
+                    document.getElementById('task'+s).value = sub.topic;
+                    updateStrike(s);
+                });
+                disableWriting();
+                document.getElementById('saveBtn').style.display = "none";
+                document.getElementById('editBtn').style.display = "inline-block";
+                document.getElementById('deleteBtn').style.display = "inline-block";
+            } else {
+                resetForm();
+                enableWriting();
             }
         }
 
-        function enableWriting() {
-            document.getElementById('streamNotes').removeAttribute('readonly');
-            document.getElementById('streamNotes').style.background = "#1c2128";
-            document.getElementById('workStatus').disabled = false;
-            document.getElementsByName('perfGrade').forEach(r => r.disabled = false);
+        function resetForm() {
+            ['studyHr', 'studyMin', 'studySec', 'streamNotes', 'taskBotany', 'taskZoology', 'taskPhysics', 'taskChemistry'].forEach(i => document.getElementById(i).value = "");
+            document.getElementById('dailyGoal').checked = false;
+            document.getElementsByName('perfGrade').forEach(r => r.checked = false);
+            ['Botany', 'Zoology', 'Physics', 'Chemistry'].forEach(s => { document.getElementById('check'+s).checked = false; updateStrike(s); });
+            document.getElementById('saveBtn').style.display = "block";
             document.getElementById('editBtn').style.display = "none";
-            document.getElementById('saveBtn').style.display = "inline-block";
             document.getElementById('deleteBtn').style.display = "none";
         }
 
-        function disableWriting() {
-            document.getElementById('streamNotes').setAttribute('readonly', true);
-            document.getElementById('streamNotes').style.background = "transparent";
-            document.getElementById('workStatus').disabled = true;
-            document.getElementsByName('perfGrade').forEach(r => r.disabled = true);
-            document.getElementById('editBtn').style.display = "inline-block";
-            document.getElementById('saveBtn').style.display = "none";
-            document.getElementById('deleteBtn').style.display = "inline-block";
+        function disableWriting() { document.querySelectorAll('.marksheet input, .marksheet textarea').forEach(i => i.disabled = true); }
+        function enableWriting() { document.querySelectorAll('.marksheet input, .marksheet textarea').forEach(i => i.disabled = false); document.getElementById('saveBtn').style.display = "block"; document.getElementById('editBtn').style.display = "none"; }
+
+        async function generateReport() {
+            const s = document.getElementById('startRange').value;
+            const e = document.getElementById('endRange').value;
+            const body = document.getElementById('bankBody');
+            body.innerHTML = "<tr><td colspan='4'>Analyzing...</td></tr>";
+            const snap = await db.collection("global_logs").where(firebase.firestore.FieldPath.documentId(), ">=", s).where(firebase.firestore.FieldPath.documentId(), "<=", e).get();
+            body.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                let subH = ""; for(let key in d.subjects) if(d.subjects[key].done) subH += `• ${key}: ${d.subjects[key].topic}<br>`;
+                body.innerHTML += `<tr><td>${doc.id}</td><td>${d.time.hr}h ${d.time.min}m</td><td style="font-size:0.7rem;">${subH}</td><td>${d.performance}</td></tr>`;
+            });
+            document.getElementById('statementArea').style.display = "block";
         }
 
-        async function generateStatement() {
-            const start = document.getElementById('startDate').value;
-            const end = document.getElementById('endDate').value;
-            if(!start || !end) return alert("Select dates!");
-            const body = document.getElementById('bankBody');
-            body.innerHTML = "<tr><td colspan='4'>Fetching study records...</td></tr>";
-            try {
-                const snapshot = await db.collection("global_logs").where(firebase.firestore.FieldPath.documentId(), ">=", start).where(firebase.firestore.FieldPath.documentId(), "<=", end).get();
-                body.innerHTML = "";
-                document.getElementById('rangeText').innerText = start + " to " + end;
-                if (snapshot.empty) {
-                    body.innerHTML = "<tr><td colspan='4'>No records found for this period.</td></tr>";
-                } else {
-                    snapshot.forEach(doc => {
-                        const d = doc.data();
-                        body.innerHTML += `<tr><td style="font-family:var(--font-display); font-weight:600;">${doc.id}</td><td style="font-weight:700; color:${d.completed ? '#3fb950':'#f85149'}">${d.completed ? 'COMPLETED' : 'PENDING'}</td><td style="font-weight:600;">${d.performance}</td><td>${d.notes}</td></tr>`;
-                    });
-                }
-                document.getElementById('statementArea').style.display = "block";
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            } catch (error) { alert("Error: " + error.message); }
+        function printPDF() {
+            const theme = document.getElementById('pdfTheme').value;
+            if(theme === 'light') document.body.classList.add('light-mode-pdf');
+            else document.body.classList.remove('light-mode-pdf');
+            window.print();
         }
+
+        async function deleteFromCloud() { if(confirm("Delete log?")) { await db.collection("global_logs").doc(document.getElementById('currentDate').value).delete(); loadFromCloud(); } }
     </script>
 </body>
 </html>
